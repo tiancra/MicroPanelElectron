@@ -5,10 +5,6 @@
 ![License](https://img.shields.io/badge/license-Apache-green.svg)
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 
-## 项目简介
-
-MicroPanel Electron 是一个使用 Electron 框架构建的桌面应用程序，用于提供微服务面板的管理、配置和控制功能。支持跨越 Windows、macOS 和 Linux 平台。
-
 ## 主要功能
 
 - **系统信息展示** - 显示CPU、内存、系统版本等设备信息
