@@ -1,0 +1,33 @@
+{
+  "name": "micro-panel-electron",
+  "version": "1.6.0",
+  "private": true,
+  "main": "main.js",
+  "description": "Micro Panel made with Electron",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "debug": "electron . --debugmode",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.smallv.micropanel",
+    "productName": "Micro Panel",
+    "directories": {
+      "output": "dist"
+    },
+    "icon": "logo.png",
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^26.7.0"
+  }
+}

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Micro Panel - 登录</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        transition: none !important;
+        animation: none !important;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        background: #ffffff;
+        color: #111111;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .titlebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px 0 12px;
+        z-index: 2000;
+        background: rgba(255, 255, 255, 0.98);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        -webkit-app-region: drag;
+        user-select: none;
+      }
+
+      .titlebar-title {
+        font-size: 13px;
+        letter-spacing: 0.2px;
+        color: rgba(0, 0, 0, 0.75);
+        font-weight: 600;
+      }
+
+      .titlebar-controls {
+        display: flex;
+        gap: 6px;
+        -webkit-app-region: no-drag;
+      }
+
+      .traffic-lights {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        -webkit-app-region: no-drag;
+      }
+
+      .tl-btn {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 0, 0, 0.35);
+        padding: 0;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .tl-btn.close {
+        background: #ff5f57;
+        border-color: rgba(0, 0, 0, 0.35);
+      }
+
+      .tl-btn.minimize {
+        background: #febc2e;
+        border-color: rgba(0, 0, 0, 0.28);
+      }
+
+      .tl-btn.maximize {
+        background: #28c840;
+        border-color: rgba(0, 0, 0, 0.28);
+      }
+
+      .traffic-lights:hover .tl-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        display: block;
+        background: rgba(0, 0, 0, 0.18);
+        -webkit-mask-size: 8px 8px;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+      }
+
+      .traffic-lights:hover .tl-btn.close::before {
+        -webkit-mask-image: linear-gradient(#000, #000);
+        clip-path: polygon(20% 28%, 28% 20%, 50% 42%, 72% 20%, 80% 28%, 58% 50%, 80% 72%, 72% 80%, 50% 58%, 28% 80%, 20% 72%, 42% 50%);
+      }
+
+      .traffic-lights:hover .tl-btn.minimize::before {
+        -webkit-mask-image: linear-gradient(#000, #000);
+        clip-path: polygon(20% 46%, 80% 46%, 80% 54%, 20% 54%);
+      }
+
+      .traffic-lights:hover .tl-btn.maximize::before {
+        -webkit-mask-image: linear-gradient(#000, #000);
+        clip-path: polygon(30% 30%, 70% 30%, 70% 70%, 30% 70%);
+      }
+
+      .login-container {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100vh;
+        padding: 18px;
+        z-index: 10;
+      }
+
+      .login-mask {
+        display: none;
+      }
+
+      .login-box {
+        position: relative;
+        display: flex;
+        width: 100%;
+        max-width: 450px;
+        height: 520px;
+        min-height: 520px;
+        justify-content: center;
+        align-items: center;
+        color: #111111;
+        z-index: 30;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 40px;
+        margin: 20px;
+      }
+
+      .login-box:hover {
+        box-shadow: 0 12px 48px rgba(29, 255, 225, 0.2);
+      }
+
+      .login-form {
+        width: 100%;
+      }
+
+      .logo-container {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 15px;
+      }
+
+      .title {
+        font-size: 24px;
+        color: #111111;
+        margin-bottom: 5px;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.55);
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.65);
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        color: #111111;
+        font-size: 16px;
+        transition: all 0.3s;
+        box-sizing: border-box;
+      }
+
+      .form-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.18);
+        border-color: rgba(64, 158, 255, 0.65);
+      }
+
+      .form-input::placeholder {
+        color: rgba(0, 0, 0, 0.35);
+      }
+
+      .login-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(45deg, #00dbde, #fc00ff);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+      }
+
+      .login-btn:hover {
+        box-shadow: 0 5px 15px rgba(0, 219, 222, 0.4);
+      }
+
+      .login-btn:active {
+        transform: translateY(0);
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 13px;
+        line-height: 18px;
+        color: rgba(0, 0, 0, 0.6);
+        font-weight: 600;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+      }
+
+      .footer:hover {
+        opacity: 1;
+      }
+
+      .error-message {
+        color: #ff6b6b;
+        font-size: 14px;
+        margin-top: 5px;
+        text-align: center;
+        min-height: 20px;
+      }
+
+      .helper-row {
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .link-btn {
+        background: transparent;
+        border: none;
+        color: rgba(0, 0, 0, 0.75);
+        cursor: pointer;
+        font-size: 13px;
+        padding: 6px 10px;
+        opacity: 0.85;
+      }
+
+      .link-btn:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+
+      .opts {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .opt {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.75);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .opt input {
+        width: 14px;
+        height: 14px;
+        accent-color: rgba(0, 0, 0, 0.85);
+        cursor: pointer;
+      }
+
+      @media (max-width: 768px) {
+        .login-box {
+          margin-right: 0;
+          max-width: 100%;
+          margin: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-title">Micro Panel</div>
+      <div class="traffic-lights" id="windowControls">
+        <button class="tl-btn minimize" id="minimizeBtn" aria-label="minimize"></button>
+        <button class="tl-btn maximize" id="maximizeBtn" aria-label="maximize"></button>
+        <button class="tl-btn close" id="closeBtn" aria-label="close"></button>
+      </div>
+    </div>
+
+    <div class="login-container">
+      <div class="login-mask"></div>
+
+      <div class="login-box">
+        <form class="login-form" id="loginForm">
+          <div class="logo-container">
+            <img src="/logo.png" alt="Micro Panel Logo" class="logo" />
+            <h2 class="title">登录 Micro Panel</h2>
+            <p class="subtitle">Yunzai开发管理面板</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">账号</label>
+            <input type="text" class="form-input" id="username" placeholder="请输入账号" value="admin" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">密码</label>
+            <input type="password" class="form-input" id="password" placeholder="请输入密码" value="114514" />
+          </div>
+
+          <button type="button" class="login-btn" id="loginBtn">登录</button>
+
+          <div id="errorMessage" class="error-message"></div>
+
+          <div class="helper-row">
+            <div class="opts">
+              <label class="opt"><input type="checkbox" id="rememberPwd" />记住密码</label>
+              <label class="opt"><input type="checkbox" id="autoLogin" />自动登录</label>
+            </div>
+            <button type="button" class="link-btn" id="gotoConfigBtn">修改服务器地址</button>
+          </div>
+
+          <p class="footer">Powered by Yunzai-Bot & Micro-Plugin</p>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEYS = {
+        origin: 'MICROPANEL_SERVER_ORIGIN',
+        token: 'TOKEN',
+        remember: 'MP_REMEMBER',
+        auto: 'MP_AUTOLOGIN',
+        cred: 'MP_CRED',
+      };
+
+      function getServerOrigin() {
+        try {
+          const u = new URL(window.location.href);
+          const q = u.searchParams.get('serverOrigin');
+          if (q) return q;
+        } catch {}
+        try {
+          return localStorage.getItem(STORAGE_KEYS.origin) || '';
+        } catch {
+          return '';
+        }
+      }
+
+      function loadPrefs() {
+        return loadPrefsAsync();
+      }
+
+      async function loadPrefsAsync() {
+        let state = null;
+        if (window.microPanel && window.microPanel.getAuthState) {
+          try {
+            state = await window.microPanel.getAuthState();
+          } catch {}
+        }
+
+        let remember = false;
+        let auto = false;
+        let username = '';
+        let password = '';
+        let token = '';
+
+        if (state && typeof state === 'object') {
+          remember = !!state.remember;
+          auto = !!state.autoLogin;
+          username = typeof state.username === 'string' ? state.username : '';
+          password = typeof state.password === 'string' ? state.password : '';
+          token = typeof state.token === 'string' ? state.token : '';
+        } else {
+          try {
+            remember = localStorage.getItem(STORAGE_KEYS.remember) === '1';
+            auto = localStorage.getItem(STORAGE_KEYS.auto) === '1';
+            const raw = localStorage.getItem(STORAGE_KEYS.cred) || '';
+            if (raw) {
+              const json = JSON.parse(atob(raw));
+              if (json && typeof json.username === 'string') username = json.username;
+              if (json && typeof json.password === 'string') password = json.password;
+            }
+            token = localStorage.getItem(STORAGE_KEYS.token) || '';
+          } catch {}
+        }
+
+        const rememberEl = document.getElementById('rememberPwd');
+        const autoEl = document.getElementById('autoLogin');
+        if (rememberEl) rememberEl.checked = remember;
+        if (autoEl) autoEl.checked = auto;
+
+        if (auto && !remember) {
+          if (rememberEl) rememberEl.checked = true;
+          remember = true;
+        }
+
+        if (remember) {
+          if (username) document.getElementById('username').value = username;
+          if (password) document.getElementById('password').value = password;
+        }
+
+        if (token) {
+          try {
+            localStorage.setItem(STORAGE_KEYS.token, token);
+          } catch {}
+        }
+
+        return { remember, auto };
+      }
+
+      async function persistPrefs() {
+        const rememberEl = document.getElementById('rememberPwd');
+        const autoEl = document.getElementById('autoLogin');
+        const remember = !!(rememberEl && rememberEl.checked);
+        const auto = !!(autoEl && autoEl.checked);
+        try {
+          localStorage.setItem(STORAGE_KEYS.remember, remember ? '1' : '0');
+          localStorage.setItem(STORAGE_KEYS.auto, auto ? '1' : '0');
+        } catch {}
+        await persistAuthFile();
+      }
+
+      async function persistCredIfNeeded() {
+        const rememberEl = document.getElementById('rememberPwd');
+        const remember = !!(rememberEl && rememberEl.checked);
+        try {
+          if (!remember) {
+            localStorage.removeItem(STORAGE_KEYS.cred);
+            await persistAuthFile();
+            return;
+          }
+          const username = document.getElementById('username').value.trim();
+          const password = document.getElementById('password').value;
+          const payload = btoa(JSON.stringify({ username, password }));
+          localStorage.setItem(STORAGE_KEYS.cred, payload);
+        } catch {}
+        await persistAuthFile();
+      }
+
+      async function persistAuthFile(extra = {}) {
+        if (!window.microPanel || !window.microPanel.setAuthState) return;
+        const remember = !!document.getElementById('rememberPwd').checked;
+        const autoLogin = !!document.getElementById('autoLogin').checked;
+        const payload = {
+          remember,
+          autoLogin,
+          token: '',
+          username: '',
+          password: '',
+          ...extra,
+        };
+        if (remember) {
+          payload.username = document.getElementById('username').value.trim();
+          payload.password = document.getElementById('password').value;
+        }
+        try {
+          payload.token = localStorage.getItem(STORAGE_KEYS.token) || '';
+        } catch {}
+        try {
+          await window.microPanel.setAuthState(payload);
+        } catch {}
+      }
+
+      async function tryAutoLogin() {
+        const autoEl = document.getElementById('autoLogin');
+        const auto = !!(autoEl && autoEl.checked);
+        if (!auto) return;
+
+        const origin = getServerOrigin();
+        if (!origin) return;
+
+        let token = '';
+        try {
+          token = localStorage.getItem(STORAGE_KEYS.token) || '';
+        } catch {}
+
+        if (token) {
+          try {
+            const res = await fetch('/api/user/info', { headers: { token } });
+            const json = await res.json();
+            if (json && json.code === 200) {
+              if (window.microPanel && window.microPanel.gotoApp) window.microPanel.gotoApp(origin);
+              return;
+            }
+          } catch {}
+        }
+
+        await login({ silent: true });
+      }
+
+      async function login(options = {}) {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const errorMessage = document.getElementById('errorMessage');
+        const silent = !!options.silent;
+
+        if (!username || !password) {
+          if (!silent) errorMessage.textContent = '请输入账号和密码';
+          return;
+        }
+
+        const origin = getServerOrigin();
+        if (!origin) {
+          if (!silent) errorMessage.textContent = '请先配置服务器地址';
+          return;
+        }
+
+        if (!silent) errorMessage.textContent = '';
+
+        try {
+          const res = await fetch(`/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+          const json = await res.json();
+          if (json && json.code === 200) {
+            try {
+              localStorage.setItem(STORAGE_KEYS.token, json.data);
+              localStorage.setItem(STORAGE_KEYS.origin, origin);
+            } catch {}
+            await persistPrefs();
+            await persistCredIfNeeded();
+            await persistAuthFile({ token: json.data });
+            if (window.microPanel && window.microPanel.gotoApp) {
+              window.microPanel.gotoApp(origin);
+            } else {
+              window.location.href = `index.html?serverOrigin=${encodeURIComponent(origin)}#/`;
+            }
+          } else {
+            if (!silent) errorMessage.textContent = json?.message || '登录失败';
+          }
+        } catch {
+          if (!silent) errorMessage.textContent = '登录失败，请检查服务器是否可访问';
+        }
+      }
+
+      document.getElementById('minimizeBtn').addEventListener('click', () => window.microPanel && window.microPanel.minimize && window.microPanel.minimize());
+      document.getElementById('maximizeBtn').addEventListener('click', () => window.microPanel && window.microPanel.maximize && window.microPanel.maximize());
+      document.getElementById('closeBtn').addEventListener('click', () => window.microPanel && window.microPanel.close && window.microPanel.close());
+      document.getElementById('titlebar').addEventListener('dblclick', () => window.microPanel && window.microPanel.maximize && window.microPanel.maximize());
+      document.getElementById('gotoConfigBtn').addEventListener('click', () => window.microPanel && window.microPanel.gotoConfig && window.microPanel.gotoConfig());
+
+      document.getElementById('rememberPwd').addEventListener('change', () => {
+        const autoEl = document.getElementById('autoLogin');
+        if (autoEl && autoEl.checked) {
+          document.getElementById('rememberPwd').checked = true;
+        }
+        persistPrefs();
+        persistCredIfNeeded();
+      });
+
+      document.getElementById('autoLogin').addEventListener('change', () => {
+        if (document.getElementById('autoLogin').checked) {
+          document.getElementById('rememberPwd').checked = true;
+        }
+        persistPrefs();
+        persistCredIfNeeded();
+      });
+
+      document.getElementById('loginBtn').addEventListener('click', login);
+      document.getElementById('loginForm').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') login();
+      });
+      document.addEventListener('DOMContentLoaded', () => {
+        loadPrefsAsync().then(() => {
+          persistPrefs();
+          setTimeout(() => { tryAutoLogin(); }, 350);
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,3830 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>低代码开发管理平台</title>
+    <style>
+      html, body { height: 100%; }
+      body { overflow: hidden; overscroll-behavior: none; }
+      .tabbar { -webkit-app-region: drag; }
+      .tabbar a, .tabbar button, .tabbar input, .tabbar textarea, .tabbar select { -webkit-app-region: no-drag; }
+      .tabbar_left, .tabbar_left * { -webkit-app-region: no-drag !important; pointer-events: auto !important; }
+      .tabbar_right, .tabbar_right * { -webkit-app-region: no-drag !important; pointer-events: auto !important; }
+      .tabbar_right .el-dropdown, .tabbar_right .el-dropdown * { -webkit-app-region: no-drag !important; pointer-events: auto !important; }
+      .tabbar_right .el-dropdown-link { -webkit-app-region: no-drag !important; pointer-events: auto !important; }
+      .tabbar_right .el-dropdown-link i.el-icon.el-icon--right,
+      .tabbar_right .el-dropdown-link .el-icon.el-icon--right { display: none !important; }
+      .mp-user-text {
+        height: 28px;
+        max-width: 220px;
+        padding: 0 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.12);
+        color: inherit;
+        outline: none;
+        -webkit-app-region: no-drag !important;
+      }
+      html.dark .mp-user-text {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .mp-admin-autologin-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 6px 0;
+      }
+      .mp-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex: 0 0 44px;
+      }
+      .mp-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+      .mp-switch-track {
+        position: absolute;
+        inset: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+      }
+      html.dark .mp-switch-track {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .mp-switch-track::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        transform: translateY(-50%);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      }
+      .mp-switch input:checked + .mp-switch-track {
+        background: rgba(64, 158, 255, 0.32);
+        border-color: rgba(64, 158, 255, 0.5);
+      }
+      .mp-switch input:checked + .mp-switch-track::after {
+        left: 23px;
+      }
+      .mp-admin-autologin-hint {
+        font-size: 12px;
+        opacity: 0.75;
+        padding-top: 6px;
+      }
+      .layout_container { height: 100vh; overflow: hidden; }
+      .layout_main { overflow: auto !important; -webkit-app-region: no-drag; overscroll-behavior: contain; }
+      .layout_main .com { overflow: auto !important; overscroll-behavior: contain; }
+      .el-scrollbar__wrap, .el-table__body-wrapper, .el-drawer__body, .el-dialog__body { overscroll-behavior: contain; }
+      .layout_container, .layout_container *, .layout_container *::before, .layout_container *::after { transition: none !important; animation: none !important; }
+      .layout_container *:hover { transform: none !important; }
+      .el-card { transition: none !important; }
+      .el-card:hover { transform: none !important; }
+      .el-card__body { transition: none !important; transform: none !important; }
+      .el-card:hover .el-card__body { transition: none !important; transform: none !important; }
+      #mp-window-controls { display: flex; align-items: center; gap: 12px; margin-left: 18px; margin-right: 14px; }
+      #mp-window-controls .tl-btn {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 0, 0, 0.35);
+        padding: 0;
+        cursor: pointer;
+        position: relative;
+      }
+      #mp-window-controls .tl-btn.close { background: #ff5f57; border-color: rgba(0, 0, 0, 0.35); }
+      #mp-window-controls .tl-btn.minimize { background: #febc2e; border-color: rgba(0, 0, 0, 0.28); }
+      #mp-window-controls .tl-btn.maximize { background: #28c840; border-color: rgba(0, 0, 0, 0.28); }
+      #mp-window-controls:hover .tl-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        display: block;
+        background: rgba(0, 0, 0, 0.18);
+        -webkit-mask-size: 8px 8px;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+      }
+      #mp-window-controls:hover .tl-btn.close::before {
+        -webkit-mask-image: linear-gradient(#000, #000);
+        clip-path: polygon(20% 28%, 28% 20%, 50% 42%, 72% 20%, 80% 28%, 58% 50%, 80% 72%, 72% 80%, 50% 58%, 28% 80%, 20% 72%, 42% 50%);
+      }
+      #mp-window-controls:hover .tl-btn.minimize::before {
+        -webkit-mask-image: linear-gradient(#000, #000);
+        clip-path: polygon(20% 46%, 80% 46%, 80% 54%, 20% 54%);
+      }
+      #mp-window-controls:hover .tl-btn.maximize::before {
+        -webkit-mask-image: linear-gradient(#000, #000);
+        clip-path: polygon(30% 30%, 70% 30%, 70% 70%, 30% 70%);
+      }
+      :root { --mp-sidebar-w: 64px; --mp-submenu-w: 176px; }
+      .layout_slider {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: var(--mp-sidebar-w) !important;
+        z-index: 20 !important;
+      }
+      .layout_slider.hidden { width: 0 !important; }
+      .layout_slider .logo p { display: none !important; }
+      .layout_slider .el-scrollbar.scrollbar { height: calc(100vh - 60px) !important; }
+      .layout_slider .el-menu { width: 100% !important; }
+      .layout_slider .el-menu-item,
+      .layout_slider .el-sub-menu__title {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        justify-content: center !important;
+        position: relative !important;
+      }
+      .layout_slider .el-menu-item > span,
+      .layout_slider .el-sub-menu__title > span { display: none !important; }
+      .layout_slider .el-sub-menu__icon-arrow { display: none !important; }
+      .layout_slider .el-sub-menu > .el-menu { display: none !important; }
+      .layout_slider .el-sub-menu__title::after {
+        content: '›';
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      #mp-submenu-column {
+        position: fixed;
+        top: 0;
+        left: var(--mp-sidebar-w);
+        width: var(--mp-submenu-w);
+        height: 100vh;
+        z-index: 25;
+        display: block !important;
+        padding: 10px 10px 12px;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(6px);
+        border-right: 1px solid rgba(255, 255, 255, 0.3);
+        -webkit-app-region: no-drag;
+        pointer-events: auto;
+        overflow: auto;
+      }
+      html.dark #mp-submenu-column {
+        background: rgba(26, 26, 26, 0.5);
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .layout_slider.hidden ~ #mp-submenu-column { display: block !important; left: 0 !important; }
+
+      #mp-submenu-column .mp-submenu-title {
+        font-size: 12px;
+        font-weight: 700;
+        opacity: 0.85;
+        padding: 8px 8px 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #mp-submenu-column .mp-submenu-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 10px 10px;
+        margin: 0 0 8px 0;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.12);
+        color: inherit;
+        cursor: pointer;
+        text-align: left;
+        -webkit-app-region: no-drag;
+      }
+      #mp-submenu-column .mp-submenu-icon {
+        width: 18px;
+        height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 18px;
+        opacity: 0.9;
+      }
+      #mp-submenu-column .mp-submenu-label {
+        flex: 1 1 auto;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      html.dark #mp-submenu-column .mp-submenu-btn {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+      }
+      #mp-submenu-column .mp-submenu-btn.active {
+        border-color: rgba(64, 158, 255, 0.5);
+        background: rgba(64, 158, 255, 0.18);
+      }
+
+      .layout_tabbar {
+        left: calc(var(--mp-sidebar-w) + var(--mp-submenu-w)) !important;
+        right: 0 !important;
+        width: auto !important;
+      }
+      .layout_main {
+        left: calc(var(--mp-sidebar-w) + var(--mp-submenu-w)) !important;
+        right: 0 !important;
+        width: auto !important;
+      }
+      .layout_tabbar.hidden, .layout_main.hidden {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+      }
+      
+      /* 终端样式 - 确保字体始终为白色 */
+      .terminal, .xterm, .xterm-rows, .terminal-container, .console, .cmd, .shell, #terminal, [id*="terminal"], [class*="terminal"], [id*="term"], [class*="term"], [id*="console"], [class*="console"] {
+        color: white !important;
+      }
+      
+      /* 确保终端内的所有文本元素都是白色 */
+      .terminal *, .xterm *, .terminal-container *, .console *, .cmd *, .shell * {
+        color: white !important;
+      }
+    </style>
+    <script>
+      ;(function () {
+        function normalizeOrigin(origin) {
+          if (!origin || typeof origin !== 'string') return '';
+          let o = origin.trim();
+          if (!o) return '';
+          if (!/^https?:\/\//i.test(o)) o = `http://${o}`;
+          try {
+            const u = new URL(o);
+            const port = u.port ? `:${u.port}` : '';
+            return `${u.protocol}//${u.hostname}${port}`;
+          } catch {
+            return '';
+          }
+        }
+
+        function readOriginFromQuery() {
+          try {
+            const u = new URL(window.location.href);
+            const raw = u.searchParams.get('serverOrigin');
+            return raw ? decodeURIComponent(raw) : '';
+          } catch {
+            return '';
+          }
+        }
+
+        function readOriginFromStorage() {
+          try {
+            return localStorage.getItem('MICROPANEL_SERVER_ORIGIN') || '';
+          } catch {
+            return '';
+          }
+        }
+
+        function persistOrigin(origin) {
+          try {
+            localStorage.setItem('MICROPANEL_SERVER_ORIGIN', origin);
+          } catch {}
+        }
+
+        const origin = normalizeOrigin(readOriginFromQuery() || readOriginFromStorage());
+        if (!origin) {
+          if (!/config\.html(\?|#|$)/i.test(window.location.href)) {
+            try {
+              window.location.replace('config.html');
+            } catch {
+              window.location.href = 'config.html';
+            }
+          }
+          return;
+        }
+
+        persistOrigin(origin);
+        window.__MICROPANEL_SERVER_ORIGIN__ = origin;
+
+        (function hydrateTokenFromFile() {
+          if (!window.microPanel || !window.microPanel.getAuthState) return;
+          let existing = '';
+          try {
+            existing = localStorage.getItem('TOKEN') || '';
+          } catch {}
+          if (existing) return;
+          Promise.resolve()
+            .then(() => window.microPanel.getAuthState())
+            .then((state) => {
+              const token = state && typeof state === 'object' && typeof state.token === 'string' ? state.token : '';
+              if (!token) return;
+              try {
+                localStorage.setItem('TOKEN', token);
+              } catch {}
+            })
+            .catch(() => {});
+        })();
+
+        (function enforceStandaloneLogin() {
+          function isLoginHash() {
+            const h = window.location.hash || '';
+            return h === '#/login' || h.startsWith('#/login?') || h.startsWith('#/login/');
+          }
+
+          function redirectToStandaloneLogin() {
+            if (!isLoginHash()) return;
+            const url = `/login.html?serverOrigin=${encodeURIComponent(origin)}`;
+            try {
+              window.location.replace(url);
+            } catch {
+              window.location.href = url;
+            }
+          }
+
+          redirectToStandaloneLogin();
+          window.addEventListener('hashchange', redirectToStandaloneLogin);
+        })();
+
+        (function interceptLogoutToLoginWindow() {
+          if (!document || !window.microPanel) return;
+          if (!/index\.html(\?|#|$)/i.test(window.location.href)) return;
+
+          function normText(t) {
+            return String(t || '')
+              .replace(/\s+/g, ' ')
+              .trim();
+          }
+
+          async function disableAutoLoginAndToken() {
+            try {
+              localStorage.removeItem('TOKEN');
+              localStorage.setItem('MP_AUTOLOGIN', '0');
+            } catch {}
+            if (window.microPanel && window.microPanel.getAuthState && window.microPanel.setAuthState) {
+              try {
+                const prev = await window.microPanel.getAuthState();
+                await window.microPanel.setAuthState({
+                  ...(prev && typeof prev === 'object' ? prev : {}),
+                  autoLogin: false,
+                  token: '',
+                });
+              } catch {}
+            }
+          }
+
+          // 显示重启到调试模式的弹窗
+          function showRestartToDebugModeDialog() {
+            // 创建弹窗容器
+            const dialogContainer = document.createElement('div');
+            dialogContainer.id = 'restart-debug-dialog';
+            dialogContainer.style.cssText = `
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 10000;
+              background: white;
+              border: 1px solid #e4e7ed;
+              border-radius: 4px;
+              box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+              padding: 20px;
+              min-width: 300px;
+              max-width: 400px;
+              animation: fadeIn 0.3s ease;
+            `;
+
+            // 添加动画样式
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+              @keyframes fadeIn {
+                from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+              }
+              #restart-debug-dialog-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 9999;
+                animation: fadeIn 0.3s ease;
+              }
+            `;
+            document.head.appendChild(styleSheet);
+
+            // 创建背景遮罩
+            const backdrop = document.createElement('div');
+            backdrop.id = 'restart-debug-dialog-backdrop';
+            document.body.appendChild(backdrop);
+
+            // 创建弹窗内容
+            const dialogContent = document.createElement('div');
+            dialogContent.innerHTML = `
+              <div style="margin-bottom: 15px;">
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">重启到调试模式</div>
+                <div style="line-height: 1.5;">确定要重启应用到调试模式吗？</div>
+              </div>
+              <div style="text-align: right;">
+                <button id="restart-debug-cancel" style="
+                  padding: 6px 12px;
+                  background: #fff;
+                  color: #303133;
+                  border: 1px solid #dcdfe6;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  margin-right: 10px;
+                ">取消</button>
+                <button id="restart-debug-confirm" style="
+                  padding: 6px 12px;
+                  background: #409eff;
+                  color: white;
+                  border: none;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  transition: background-color 0.2s ease;
+                ">确定</button>
+              </div>
+            `;
+
+            dialogContainer.appendChild(dialogContent);
+            document.body.appendChild(dialogContainer);
+
+            // 添加取消按钮事件
+            const cancelButton = document.getElementById('restart-debug-cancel');
+            if (cancelButton) {
+              cancelButton.addEventListener('click', function() {
+                dialogContainer.remove();
+                backdrop.remove();
+                styleSheet.remove();
+              });
+            }
+
+            // 添加确定按钮事件
+            const confirmButton = document.getElementById('restart-debug-confirm');
+            if (confirmButton) {
+              confirmButton.addEventListener('click', function() {
+                // 发送消息给主进程，要求以调试模式重启
+                if (window.microPanel && window.microPanel.restartToDebugMode) {
+                  window.microPanel.restartToDebugMode();
+                }
+                dialogContainer.remove();
+                backdrop.remove();
+                styleSheet.remove();
+              });
+            }
+          }
+
+          document.addEventListener(
+            'click',
+            (e) => {
+              const target = e && e.target && e.target.nodeType === 1 ? e.target : null;
+              if (!target || !target.closest) return;
+              const item = target.closest('.el-dropdown-menu__item');
+              if (!(item instanceof HTMLElement)) return;
+              const text = normText(item.textContent);
+              if (text !== '退出登录') return;
+              
+              // 检查是否按下了Ctrl+Alt键
+              if (e.ctrlKey && e.altKey) {
+                try {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                } catch {}
+                
+                // 显示重启到调试模式的弹窗
+                showRestartToDebugModeDialog();
+                return;
+              }
+              
+              // 正常退出登录逻辑
+              try {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+              } catch {}
+              disableAutoLoginAndToken().finally(() => {
+                const o = window.__MICROPANEL_SERVER_ORIGIN__ || '';
+                try {
+                  if (window.microPanel && window.microPanel.gotoLogin) window.microPanel.gotoLogin(o, { closeSender: true });
+                } catch {}
+              });
+            },
+            true,
+          );
+        })();
+
+        (function injectWindowControls() {
+          if (!document || document.getElementById('mp-window-controls')) return;
+          if (window.microPanel && window.microPanel.logControlEvent) {
+            window.microPanel.logControlEvent('load', 'WindowControls', { action: '开始加载窗口控制按钮' });
+          }
+
+          (function fixSettingDropdownTrigger() {
+            function removeArrow() {
+              try {
+                document
+                  .querySelectorAll('.tabbar_right .el-dropdown-link i.el-icon.el-icon--right, .tabbar_right .el-dropdown-link .el-icon.el-icon--right')
+                  .forEach((el) => el.remove());
+              } catch {}
+            }
+
+            function replaceDropdownWithText() {
+              const right = document.querySelector('.tabbar_right');
+              if (!right) return;
+              if (document.getElementById('mp-user-text')) return;
+              const dropdown = right.querySelector('.el-dropdown');
+              if (!dropdown) return;
+              const link = dropdown.querySelector('.el-dropdown-link');
+              const name = ((link && link.textContent) || '').trim().replace(/\s+/g, ' ');
+              const input = document.createElement('input');
+              input.id = 'mp-user-text';
+              input.className = 'mp-user-text';
+              input.type = 'text';
+              input.readOnly = true;
+              input.value = name || '用户';
+              try {
+                input.setAttribute('aria-label', 'user');
+              } catch {}
+              try {
+                dropdown.replaceWith(input);
+              } catch {
+                try {
+                  right.appendChild(input);
+                  dropdown.remove();
+                } catch {}
+              }
+            }
+
+            function forceNoDrag() {
+              const nodes = document.querySelectorAll('.tabbar, .tabbar_left, .tabbar_right, .tabbar_right .el-dropdown-link');
+              nodes.forEach((n) => {
+                if (!(n instanceof HTMLElement)) return;
+                try {
+                  n.style.webkitAppRegion = 'no-drag';
+                } catch {}
+              });
+            }
+
+            function syncAriaByPopper() {
+              const trigger = document.querySelector('.tabbar_right .el-dropdown-link');
+              if (!(trigger instanceof HTMLElement)) return;
+              const open = !!document.querySelector('.el-dropdown__popper, .el-popper.is-light, .el-popper.is-dark');
+              try {
+                trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+              } catch {}
+            }
+
+            removeArrow();
+            replaceDropdownWithText();
+            forceNoDrag();
+            syncAriaByPopper();
+
+            if (window.MutationObserver) {
+              const ob = new MutationObserver(() => {
+                removeArrow();
+                replaceDropdownWithText();
+                forceNoDrag();
+                syncAriaByPopper();
+              });
+              try {
+                ob.observe(document.body, { childList: true, subtree: true });
+              } catch {}
+            }
+          })();
+
+          function mount() {
+            const right = document.querySelector('.tabbar_right');
+            if (!right) return false;
+            if (document.getElementById('mp-window-controls')) return true;
+
+            const wrap = document.createElement('div');
+            wrap.id = 'mp-window-controls';
+            wrap.innerHTML = `
+              <button class="tl-btn minimize" id="mp-min" aria-label="minimize"></button>
+              <button class="tl-btn maximize" id="mp-max" aria-label="maximize"></button>
+              <button class="tl-btn close" id="mp-close" aria-label="close"></button>
+            `;
+            right.appendChild(wrap);
+
+            if (window.microPanel && window.microPanel.logControlEvent) {
+              window.microPanel.logControlEvent('show', 'WindowControls', { action: '窗口控制按钮加载完成' });
+            }
+
+            const minBtn = document.getElementById('mp-min');
+            const maxBtn = document.getElementById('mp-max');
+            const closeBtn = document.getElementById('mp-close');
+
+            if (minBtn) minBtn.addEventListener('click', () => window.microPanel && window.microPanel.minimize && window.microPanel.minimize());
+            if (maxBtn) maxBtn.addEventListener('click', () => window.microPanel && window.microPanel.maximize && window.microPanel.maximize());
+            if (closeBtn) closeBtn.addEventListener('click', () => window.microPanel && window.microPanel.close && window.microPanel.close());
+
+            const tabbar = document.querySelector('.tabbar');
+            if (tabbar) tabbar.addEventListener('dblclick', () => window.microPanel && window.microPanel.maximize && window.microPanel.maximize());
+            return true;
+          }
+
+          if (!mount()) {
+            const timer = window.setInterval(() => {
+              if (mount()) window.clearInterval(timer);
+            }, 200);
+            window.setTimeout(() => window.clearInterval(timer), 15000);
+          }
+
+          (function keepMounted() {
+            if (!window.MutationObserver) return;
+            let scheduled = false;
+            const observer = new MutationObserver(() => {
+              if (scheduled) return;
+              scheduled = true;
+              window.requestAnimationFrame(() => {
+                scheduled = false;
+                if (!document.getElementById('mp-window-controls')) mount();
+              });
+            });
+            try {
+              observer.observe(document.documentElement, { childList: true, subtree: true });
+            } catch {}
+          })();
+        })();
+
+        (function injectSidebarSubColumn() {
+          if (!document || document.getElementById('mp-submenu-column')) return;
+          if (window.microPanel && window.microPanel.logControlEvent) {
+            window.microPanel.logControlEvent('load', 'SidebarSubColumn', { action: '开始加载侧边栏子菜单列' });
+          }
+
+          let __mp_last_submenu_key = '';
+          let __mp_observer_started = false;
+          let __mp_submenu_pinned = false;
+
+          function setTitles() {
+            const root = document.querySelector('.layout_slider .el-menu');
+            if (!root) return;
+            const titleEls = root.querySelectorAll('.el-menu-item, .el-sub-menu__title');
+            titleEls.forEach((el) => {
+              if (!(el instanceof HTMLElement)) return;
+              if (el.getAttribute('title')) return;
+              const text = (el.textContent || '').trim().replace(/\s+/g, ' ');
+              if (text) el.setAttribute('title', text);
+            });
+          }
+
+          function getSubMenuKey(sub) {
+            if (!sub || !(sub instanceof HTMLElement)) return '';
+            const idx = getMenuItemIndex(sub);
+            if (idx) return `sub:${idx}`;
+            const titleText = (sub.querySelector('.el-sub-menu__title')?.textContent || '').trim().replace(/\s+/g, ' ');
+            return titleText ? `sub:${titleText}` : 'sub:';
+          }
+
+          function getRootMenu() {
+            return document.querySelector('.layout_slider .el-menu');
+          }
+
+          function getFirstTopLevelEntry() {
+            const root = getRootMenu();
+            if (!root) return null;
+            const children = Array.from(root.children || []);
+            for (const el of children) {
+              if (!(el instanceof HTMLElement)) continue;
+              if (el.classList.contains('el-sub-menu') || el.classList.contains('el-menu-item')) return el;
+            }
+            return null;
+          }
+
+          function isHomeRoute() {
+            const h = window.location.hash || '';
+            if (!h || h === '#/' || h === '#') return true;
+            return h.startsWith('#/home') || h.startsWith('#/index') || h.startsWith('#/dashboard');
+          }
+
+          function getTopLevelSubmenu(el) {
+            const sub = el && el.closest ? el.closest('.el-sub-menu') : null;
+            if (!sub) return null;
+            const parent = sub.parentElement;
+            const root = getRootMenu();
+            if (!parent || !root || parent !== root) return null;
+            return sub;
+          }
+
+          function getTopLevelMenuItem(el) {
+            const item = el && el.closest ? el.closest('.el-menu-item') : null;
+            if (!item) return null;
+            const parent = item.parentElement;
+            const root = getRootMenu();
+            if (!parent || !root || parent !== root) return null;
+            return item;
+          }
+
+          function ensureColumn() {
+            let col = document.getElementById('mp-submenu-column');
+            if (col) return col;
+            const container = document.querySelector('.layout_container');
+            if (!container) return null;
+            col = document.createElement('div');
+            col.id = 'mp-submenu-column';
+            col.innerHTML = `<div class="mp-submenu-title" id="mp-submenu-title">子菜单</div><div id="mp-submenu-items"><div style="opacity:.7;padding:8px 8px;">点击按钮主项显子菜单</div></div>`;
+            container.appendChild(col);
+            if (window.microPanel && window.microPanel.logControlEvent) {
+              window.microPanel.logControlEvent('show', 'SidebarSubColumn', { action: '侧边栏子菜单列创建完成' });
+            }
+            return col;
+          }
+
+          function collectChildren(subMenu) {
+            const items = [];
+            if (!subMenu) return items;
+            const all = subMenu.querySelectorAll('.el-menu-item');
+            all.forEach((it) => {
+              if (!(it instanceof HTMLElement)) return;
+              items.push(it);
+            });
+            return items;
+          }
+
+          function getMenuItemIndex(el) {
+            if (!el || !(el instanceof HTMLElement)) return '';
+            return (
+              el.getAttribute('index') ||
+              el.getAttribute('data-index') ||
+              (el.dataset ? el.dataset.index : '') ||
+              ''
+            );
+          }
+
+          function getMenuItemNav(el) {
+            if (!el || !(el instanceof HTMLElement)) return '';
+            const idx = getMenuItemIndex(el);
+            if (idx) return idx;
+            try {
+              const a = el.querySelector('a[href]');
+              const href = a ? a.getAttribute('href') : '';
+              return href ? String(href) : '';
+            } catch {
+              return '';
+            }
+          }
+
+          function escapeAttrValue(v) {
+            const s = String(v || '');
+            if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(s);
+            return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+          }
+
+          function findMenuItemByIndex(idx) {
+            const v = String(idx || '');
+            if (!v) return null;
+            const e = escapeAttrValue(v);
+            return (
+              document.querySelector(`.layout_slider .el-menu-item[index="${e}"]`) ||
+              document.querySelector(`.layout_slider .el-menu-item[data-index="${e}"]`)
+            );
+          }
+
+          function navigateTo(nav) {
+            const v = String(nav || '').trim();
+            if (!v) return false;
+            try {
+              // 检查是否是外部链接
+              if (v.startsWith('http://') || v.startsWith('https://')) {
+                if (window.microPanel && window.microPanel.openInBrowser) {
+                  window.microPanel.openInBrowser(v);
+                  return true;
+                }
+              }
+              // 内部导航
+              if (v.startsWith('#')) {
+                window.location.hash = v;
+                return true;
+              }
+              if (v.startsWith('/')) {
+                window.location.hash = `#${v}`;
+                return true;
+              }
+              if (v.includes('#/')) {
+                window.location.hash = v.slice(v.indexOf('#/'));
+                return true;
+              }
+            } catch {}
+            return false;
+          }
+
+          function clickLikeUser(el) {
+            if (!el) return;
+            try {
+              el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+              el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+            } catch {}
+            try {
+              el.click();
+            } catch {}
+          }
+
+          function updateColumnActiveByNav(nav) {
+            const v = String(nav || '');
+            const buttons = document.querySelectorAll('#mp-submenu-column .mp-submenu-btn');
+            buttons.forEach((b) => {
+              if (!(b instanceof HTMLElement)) return;
+              const match = v && b.dataset && b.dataset.mpNav === v;
+              if (match) b.classList.add('active');
+              else b.classList.remove('active');
+            });
+          }
+
+          function showColumnFor(subMenu) {
+            const col = ensureColumn();
+            if (!col) return;
+            const itemsWrap = document.getElementById('mp-submenu-items');
+            const titleEl = document.getElementById('mp-submenu-title');
+            if (!itemsWrap || !titleEl) return;
+            if (window.microPanel && window.microPanel.logControlEvent) {
+              const titleText = (subMenu.querySelector('.el-sub-menu__title')?.textContent || '').trim().replace(/\s+/g, ' ');
+              window.microPanel.logControlEvent('update', 'SidebarSubColumn', { action: '更新子菜单列内容', title: titleText });
+            }
+
+            const children = collectChildren(subMenu);
+            if (!children.length) {
+              const titleText = (subMenu.querySelector('.el-sub-menu__title')?.textContent || '').trim().replace(/\s+/g, ' ');
+              titleEl.textContent = titleText || '';
+              itemsWrap.innerHTML = `<div style="opacity:.7;padding:8px 8px;">该选项没有子菜单</div>`;
+              return;
+            }
+
+            const titleText = (subMenu.querySelector('.el-sub-menu__title')?.textContent || '').trim().replace(/\s+/g, ' ');
+            titleEl.textContent = titleText || '';
+            itemsWrap.innerHTML = '';
+
+            children.forEach((menuItem) => {
+              const label = (menuItem.textContent || '').trim().replace(/\s+/g, ' ');
+              const nav = getMenuItemNav(menuItem);
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'mp-submenu-btn' + (menuItem.classList.contains('is-active') ? ' active' : '');
+              if (nav) btn.dataset.mpNav = nav;
+              const iconWrap = document.createElement('span');
+              iconWrap.className = 'mp-submenu-icon';
+              try {
+                const icon = menuItem.querySelector('.el-icon, i, svg');
+                if (icon) iconWrap.appendChild(icon.cloneNode(true));
+              } catch {}
+              const labelWrap = document.createElement('span');
+              labelWrap.className = 'mp-submenu-label';
+              labelWrap.textContent = label || '未命名';
+              btn.appendChild(iconWrap);
+              btn.appendChild(labelWrap);
+              btn.addEventListener('click', () => {
+                const live = nav ? findMenuItemByIndex(nav) : null;
+                if (live) clickLikeUser(live);
+                else if (!navigateTo(nav)) clickLikeUser(menuItem);
+                window.setTimeout(() => {
+                  try {
+                    const active = document.querySelector('.layout_slider .el-menu-item.is-active');
+                    const activeNav = active ? getMenuItemNav(active) : '';
+                    updateColumnActiveByNav(activeNav);
+                  } catch {}
+                }, 0);
+              });
+              itemsWrap.appendChild(btn);
+            });
+          }
+
+          function showSingleForMenuItem(menuItem) {
+            const col = ensureColumn();
+            if (!col) return;
+            const itemsWrap = document.getElementById('mp-submenu-items');
+            const titleEl = document.getElementById('mp-submenu-title');
+            if (!itemsWrap || !titleEl) return;
+            if (window.microPanel && window.microPanel.logControlEvent) {
+              const title = (menuItem.getAttribute('title') || menuItem.textContent || '').trim().replace(/\s+/g, ' ');
+              window.microPanel.logControlEvent('update', 'SidebarSubColumn', { action: '更新单个菜单项', title: title });
+            }
+
+            const title = (menuItem.getAttribute('title') || menuItem.textContent || '').trim().replace(/\s+/g, ' ');
+            titleEl.textContent = title || '';
+            itemsWrap.innerHTML = '';
+
+            const nav = getMenuItemNav(menuItem);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'mp-submenu-btn' + (menuItem.classList.contains('is-active') ? ' active' : '');
+            if (nav) btn.dataset.mpNav = nav;
+            const iconWrap = document.createElement('span');
+            iconWrap.className = 'mp-submenu-icon';
+            try {
+              const icon = menuItem.querySelector('.el-icon, i, svg');
+              if (icon) iconWrap.appendChild(icon.cloneNode(true));
+            } catch {}
+            const labelWrap = document.createElement('span');
+            labelWrap.className = 'mp-submenu-label';
+            labelWrap.textContent = title || '首页';
+            btn.appendChild(iconWrap);
+            btn.appendChild(labelWrap);
+            btn.addEventListener('click', () => {
+              const live = nav ? findMenuItemByIndex(nav) : null;
+              if (live) clickLikeUser(live);
+              else if (!navigateTo(nav)) clickLikeUser(menuItem);
+              window.setTimeout(() => {
+                try {
+                  const active = document.querySelector('.layout_slider .el-menu-item.is-active');
+                  const activeNav = active ? getMenuItemNav(active) : '';
+                  updateColumnActiveByNav(activeNav);
+                } catch {}
+              }, 0);
+            });
+            itemsWrap.appendChild(btn);
+          }
+
+          function syncFromActive() {
+            if (!__mp_submenu_pinned) return;
+            const active = document.querySelector('.layout_slider .el-menu-item.is-active');
+            if (!active) {
+              const first = getFirstTopLevelEntry();
+              if (first && first.classList.contains('el-sub-menu')) {
+                const nextKey = getSubMenuKey(first);
+                if (nextKey && nextKey !== __mp_last_submenu_key) {
+                  __mp_last_submenu_key = nextKey;
+                  showColumnFor(first);
+                }
+              } else if (first && first.classList.contains('el-menu-item')) {
+                const nav = getMenuItemNav(first);
+                const nextKey = nav ? `item:${nav}` : `item:${(first.textContent || '').trim().replace(/\s+/g, ' ')}`;
+                if (nextKey !== __mp_last_submenu_key) {
+                  __mp_last_submenu_key = nextKey;
+                  showSingleForMenuItem(first);
+                }
+              }
+              return;
+            }
+            const activeNav = getMenuItemNav(active);
+            if (activeNav) updateColumnActiveByNav(activeNav);
+            const sub = getTopLevelSubmenu(active);
+            if (sub) {
+              const nextKey = getSubMenuKey(sub);
+              if (!nextKey || nextKey === __mp_last_submenu_key) return;
+              __mp_last_submenu_key = nextKey;
+              showColumnFor(sub);
+              return;
+            }
+            else {
+              const topItem = getTopLevelMenuItem(active);
+              if (topItem) {
+                const nav = getMenuItemNav(topItem);
+                const nextKey = nav ? `item:${nav}` : `item:${(topItem.textContent || '').trim().replace(/\s+/g, ' ')}`;
+                if (nextKey === __mp_last_submenu_key) return;
+                __mp_last_submenu_key = nextKey;
+                showSingleForMenuItem(topItem);
+              }
+            }
+          }
+
+          function hookClicks() {
+            const slider = document.querySelector('.layout_slider');
+            if (!slider) return false;
+            if (slider.__mp_hooked) return true;
+            slider.__mp_hooked = true;
+
+            slider.addEventListener(
+              'click',
+              (e) => {
+                const target = e.target;
+                const sub = getTopLevelSubmenu(target);
+                if (sub) {
+                  const title = target && target.closest ? target.closest('.el-sub-menu__title') : null;
+                  if (title) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    __mp_submenu_pinned = true;
+                    const children = collectChildren(sub);
+                    if (children.length) {
+                      try {
+                        children[0].click();
+                      } catch {}
+                      showColumnFor(sub);
+                    } else {
+                      showColumnFor(sub);
+                    }
+                    return;
+                  }
+                }
+
+                const topItem = getTopLevelMenuItem(target);
+                if (topItem) {
+                  __mp_submenu_pinned = true;
+                  showSingleForMenuItem(topItem);
+                }
+              },
+              true,
+            );
+
+            return true;
+          }
+
+          function mountAll() {
+            setTitles();
+            hookClicks();
+            ensureColumn();
+            if (!__mp_submenu_pinned && isHomeRoute()) {
+              __mp_submenu_pinned = true;
+              const first = getFirstTopLevelEntry();
+              if (first && first.classList.contains('el-sub-menu')) {
+                const nextKey = getSubMenuKey(first);
+                if (nextKey && nextKey !== __mp_last_submenu_key) {
+                  __mp_last_submenu_key = nextKey;
+                  showColumnFor(first);
+                }
+              } else if (first && first.classList.contains('el-menu-item')) {
+                const nav = getMenuItemNav(first);
+                const nextKey = nav ? `item:${nav}` : `item:${(first.textContent || '').trim().replace(/\s+/g, ' ')}`;
+                if (nextKey !== __mp_last_submenu_key) {
+                  __mp_last_submenu_key = nextKey;
+                  showSingleForMenuItem(first);
+                }
+              }
+              syncFromActive();
+            }
+            return !!document.querySelector('.layout_slider .el-menu');
+          }
+
+          if (!mountAll()) {
+            const timer = window.setInterval(() => {
+              if (mountAll()) window.clearInterval(timer);
+            }, 250);
+            window.setTimeout(() => window.clearInterval(timer), 20000);
+          }
+
+          if (window.MutationObserver) {
+            let scheduled = false;
+            const observer = new MutationObserver(() => {
+              if (scheduled) return;
+              scheduled = true;
+              window.requestAnimationFrame(() => {
+                scheduled = false;
+                setTitles();
+                syncFromActive();
+              });
+            });
+            try {
+              const slider = document.querySelector('.layout_slider');
+              if (slider && !__mp_observer_started) {
+                __mp_observer_started = true;
+                observer.observe(slider, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+              }
+            } catch {}
+          }
+
+          window.addEventListener('hashchange', () => {
+            if (isHomeRoute()) {
+              __mp_submenu_pinned = true;
+              const first = getFirstTopLevelEntry();
+              if (first && first.classList.contains('el-sub-menu')) {
+                const nextKey = getSubMenuKey(first);
+                if (nextKey && nextKey !== __mp_last_submenu_key) {
+                  __mp_last_submenu_key = nextKey;
+                  showColumnFor(first);
+                }
+              } else if (first && first.classList.contains('el-menu-item')) {
+                const nav = getMenuItemNav(first);
+                const nextKey = nav ? `item:${nav}` : `item:${(first.textContent || '').trim().replace(/\s+/g, ' ')}`;
+                if (nextKey !== __mp_last_submenu_key) {
+                  __mp_last_submenu_key = nextKey;
+                  showSingleForMenuItem(first);
+                }
+              }
+            }
+            syncFromActive();
+          });
+        })();
+
+        (function injectAdminAutoLoginToggle() {
+          if (!document) return;
+          if (!window.microPanel || !window.microPanel.getAuthState || !window.microPanel.setAuthState) return;
+          if (window.microPanel && window.microPanel.logControlEvent) {
+            window.microPanel.logControlEvent('load', 'AdminAutoLoginToggle', { action: '开始加载管理员自动登录开关' });
+          }
+
+          function normText(t) {
+            return String(t || '')
+              .replace(/\s+/g, ' ')
+              .trim();
+          }
+
+          function findModal() {
+            return (
+              document.querySelector('.el-overlay .el-modal-dialog') ||
+              document.querySelector('.el-overlay .el-overlay-dialog .el-dialog') ||
+              document.querySelector('.el-overlay .el-dialog')
+            );
+          }
+
+          function findFormItemBySubTitle(modal, title) {
+            const items = modal.querySelectorAll('.el-form-item');
+            for (const it of items) {
+              const sub = it.querySelector('.sub-title');
+              const text = normText(sub ? sub.textContent : it.textContent);
+              if (text.includes(title)) return it;
+            }
+            return null;
+          }
+
+          function getInputValueByTitle(modal, title) {
+            const it = findFormItemBySubTitle(modal, title);
+            if (!it) return '';
+            const input = it.querySelector('input.el-input__inner');
+            return input ? String(input.value || '') : '';
+          }
+
+          function ensureInjected(modal) {
+            if (!(modal instanceof HTMLElement)) return;
+            if (modal.querySelector('#mp-admin-autologin')) return;
+            const anchor = findFormItemBySubTitle(modal, '对此管理员隐藏');
+            if (!anchor || !anchor.parentElement) return;
+
+            const row = document.createElement('div');
+            row.className = 'el-form-item';
+            row.id = 'mp-admin-autologin';
+            row.innerHTML = `
+              <div class="el-form-item__content">
+                <div class="sub-title">自动登录该账户</div>
+                <div class="mp-admin-autologin-row">
+                  <label class="mp-switch">
+                    <input type="checkbox" id="mp-admin-autologin-switch" />
+                    <span class="mp-switch-track"></span>
+                  </label>
+                </div>
+                <div class="mp-admin-autologin-hint" id="mp-admin-autologin-hint"></div>
+              </div>
+            `;
+
+            anchor.insertAdjacentElement('afterend', row);
+
+            if (window.microPanel && window.microPanel.logControlEvent) {
+              window.microPanel.logControlEvent('show', 'AdminAutoLoginToggle', { action: '管理员自动登录开关创建完成' });
+            }
+
+            const sw = row.querySelector('#mp-admin-autologin-switch');
+            const hint = row.querySelector('#mp-admin-autologin-hint');
+            if (!(sw instanceof HTMLInputElement)) return;
+
+            let inputTimer = 0;
+            async function writeFromInputs(enable) {
+              const username = normText(getInputValueByTitle(modal, '登录账号'));
+              const password = String(getInputValueByTitle(modal, '登录密码') || '');
+
+              if (enable) {
+                if (!username || !password) {
+                  sw.checked = false;
+                  if (hint) hint.textContent = '请先填写登录账号与登录密码';
+                  return;
+                }
+                if (hint) hint.textContent = '';
+                await window.microPanel.setAuthState({
+                  remember: true,
+                  autoLogin: true,
+                  username,
+                  password,
+                  token: '',
+                });
+                return;
+              }
+
+              const prev = await window.microPanel.getAuthState().catch(() => ({}));
+              await window.microPanel.setAuthState({
+                ...(prev && typeof prev === 'object' ? prev : {}),
+                autoLogin: false,
+              });
+              if (hint) hint.textContent = '';
+            }
+
+            sw.addEventListener('change', () => {
+              writeFromInputs(!!sw.checked);
+            });
+
+            function hookInput(title) {
+              const it = findFormItemBySubTitle(modal, title);
+              if (!it) return;
+              const input = it.querySelector('input.el-input__inner');
+              if (!(input instanceof HTMLInputElement)) return;
+              if (input.__mp_hooked) return;
+              input.__mp_hooked = true;
+              input.addEventListener('input', () => {
+                if (!sw.checked) return;
+                if (inputTimer) window.clearTimeout(inputTimer);
+                inputTimer = window.setTimeout(() => {
+                  writeFromInputs(true);
+                }, 250);
+              });
+            }
+
+            hookInput('登录账号');
+            hookInput('登录密码');
+
+            window.microPanel
+              .getAuthState()
+              .then((state) => {
+                const auto = !!(state && typeof state === 'object' && state.autoLogin);
+                sw.checked = auto;
+              })
+              .catch(() => {});
+          }
+
+          function scan() {
+            const modal = findModal();
+            if (modal) ensureInjected(modal);
+          }
+
+          scan();
+          if (window.MutationObserver) {
+            let scheduled = false;
+            const ob = new MutationObserver(() => {
+              if (scheduled) return;
+              scheduled = true;
+              window.requestAnimationFrame(() => {
+                scheduled = false;
+                scan();
+              });
+            });
+            try {
+              ob.observe(document.documentElement, { childList: true, subtree: true });
+            } catch {}
+          }
+        })();
+
+        (function fixWheelScroll() {
+          function isScrollable(el) {
+            if (!el || el === document.body || el === document.documentElement) return false;
+            if (el.scrollHeight <= el.clientHeight + 1) return false;
+            const s = window.getComputedStyle(el);
+            const oy = s.overflowY;
+            const isByStyle = oy === 'auto' || oy === 'scroll' || oy === 'overlay';
+            const isKnown = el.classList && (el.classList.contains('el-card__body') || el.classList.contains('el-scrollbar__wrap'));
+            return isByStyle || isKnown;
+          }
+
+          function canScroll(el, deltaY) {
+            if (!el) return false;
+            if (deltaY < 0) return el.scrollTop > 0;
+            if (deltaY > 0) return el.scrollTop + el.clientHeight < el.scrollHeight - 1;
+            return false;
+          }
+
+          function findScrollableInDirection(start, stopEl, deltaY) {
+            let el = start;
+            while (el && el !== stopEl && el !== document.body && el !== document.documentElement) {
+              if (isScrollable(el) && canScroll(el, deltaY)) return el;
+              el = el.parentElement;
+            }
+            if (stopEl && isScrollable(stopEl) && canScroll(stopEl, deltaY)) return stopEl;
+            return null;
+          }
+
+          function onWheel(e) {
+            if (e.defaultPrevented) return;
+            if (e.ctrlKey || e.metaKey) return;
+            const main = document.querySelector('.layout_main');
+            if (!main) return;
+            const target = e.target && e.target.nodeType === 1 ? e.target : null;
+            if (!target || !main.contains(target)) return;
+            const scroller = findScrollableInDirection(target, main, e.deltaY);
+            if (scroller) return;
+            if (!isScrollable(main) || !canScroll(main, e.deltaY)) return;
+            main.scrollTop += e.deltaY;
+            e.preventDefault();
+          }
+
+          window.addEventListener('wheel', onWheel, { capture: true, passive: false });
+        })();
+
+        (function updateMainTitleFromUserInfo() {
+          // 等待页面加载完成
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateTitle);
+          } else {
+            updateTitle();
+          }
+
+          async function updateTitle() {
+            try {
+              console.log('=== 开始获取用户名 ===');
+              
+              // 使用相对路径，通过本地代理发送请求，避免CORS问题
+              const apiUrl = '/api/user/info';
+              console.log('API请求URL:', apiUrl);
+              
+              // 获取本地存储的token
+              let token = '';
+              try {
+                token = localStorage.getItem('TOKEN') || '';
+                console.log('本地存储的token:', token ? '存在' : '不存在');
+              } catch (e) {
+                console.log('获取本地存储失败:', e);
+              }
+              
+              // 发送请求获取用户信息
+              console.log('准备发送API请求...');
+              const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(token ? { 'token': token } : {})  // 使用token字段而不是Authorization
+                }
+              });
+              
+              console.log('API响应状态:', response.status);
+              console.log('API响应状态文本:', response.statusText);
+              
+              if (response.ok) {
+                console.log('API请求成功，读取响应数据...');
+                try {
+                  const userInfo = await response.json();
+                  console.log('API响应数据:', userInfo);
+                  
+                  // 尝试多种可能的用户名字段，包括嵌套的data字段
+                  const username = userInfo?.username || userInfo?.name || userInfo?.user || userInfo?.account || userInfo?.data?.username || userInfo?.data?.name || userInfo?.data?.user || userInfo?.data?.account || '';
+                  console.log('提取的用户名:', username);
+                  
+                  if (username) {
+                    console.log('更新主标题为:', username);
+                    // 查找主标题元素并更新
+                    const titleElement = document.querySelector('.el-card.is-always-shadow h3');
+                    if (titleElement) {
+                      titleElement.textContent = username;
+                      console.log('主标题更新成功');
+                    } else {
+                      console.log('未找到主标题元素');
+                    }
+                  } else {
+                    console.log('API响应中无用户名，尝试从token中解码');
+                    decodeUsernameFromToken(token);
+                  }
+                } catch (e) {
+                  console.error('解析API响应失败:', e);
+                  console.log('尝试从token中解码用户名');
+                  decodeUsernameFromToken(token);
+                }
+              } else {
+                console.log('API请求失败，状态码:', response.status);
+                console.log('尝试从token中解码用户名');
+                decodeUsernameFromToken(token);
+              }
+            } catch (error) {
+              console.error('获取用户名失败:', error);
+              console.error('错误详情:', error.message);
+              console.error('错误堆栈:', error.stack);
+              
+              // 尝试从token中解码用户名
+              let token = '';
+              try {
+                token = localStorage.getItem('TOKEN') || '';
+                decodeUsernameFromToken(token);
+              } catch (e) {
+                console.error('从token解码用户名失败:', e);
+              }
+            } finally {
+              console.log('=== 获取用户名结束 ===');
+            }
+          }
+          
+          // 从token中解码用户名
+          function decodeUsernameFromToken(token) {
+            try {
+              if (token) {
+                console.log('开始从token解码用户名:', token);
+                const parts = token.split('.');
+                if (parts.length >= 2) {
+                  const payload = parts[1];
+                  // 处理base64填充
+                  const paddedPayload = payload.padEnd(payload.length + (4 - payload.length % 4) % 4, '=');
+                  const decoded = atob(paddedPayload);
+                  const userInfo = JSON.parse(decoded);
+                  const username = userInfo?.username || '';
+                  console.log('从token解码的用户名:', username);
+                  
+                  if (username) {
+                    const titleElement = document.querySelector('.el-card.is-always-shadow h3');
+                    if (titleElement) {
+                      titleElement.textContent = username;
+                      console.log('从token解码并更新主标题成功');
+                    }
+                  } else {
+                    console.log('token中无用户名');
+                  }
+                }
+              }
+            } catch (e) {
+              console.error('从token解码用户名失败:', e);
+            }
+          }
+        })();
+
+        const NativeURL = window.URL;
+        function PatchedURL(input, base) {
+          if (typeof input === 'string') {
+            const trimmed = input.trim();
+            if (trimmed === 'null' || /^file:/i.test(trimmed)) {
+              input = origin;
+              base = undefined;
+            }
+          }
+          return base !== undefined ? new NativeURL(input, base) : new NativeURL(input);
+        }
+        PatchedURL.prototype = NativeURL.prototype;
+        Object.setPrototypeOf(PatchedURL, NativeURL);
+        if (typeof NativeURL.createObjectURL === 'function') PatchedURL.createObjectURL = NativeURL.createObjectURL.bind(NativeURL);
+        if (typeof NativeURL.revokeObjectURL === 'function') PatchedURL.revokeObjectURL = NativeURL.revokeObjectURL.bind(NativeURL);
+        if (typeof NativeURL.canParse === 'function') PatchedURL.canParse = NativeURL.canParse.bind(NativeURL);
+        window.URL = PatchedURL;
+
+        function shouldRewrite(url) {
+          return false;
+        }
+
+        function rewriteUrl(url) {
+          if (!url || typeof url !== 'string') return url;
+          let u = url.trim();
+
+          if (/^file:\/\/\/api\b/i.test(u)) u = u.replace(/^file:\/\/\//i, '');
+          if (/^file:\/\/\/micro\b/i.test(u)) u = u.replace(/^file:\/\/\//i, '');
+          if (/^file:\/\/\/ws\b/i.test(u)) u = u.replace(/^file:\/\/\//i, '');
+
+          if (shouldRewrite(u)) return origin + u;
+          return url;
+        }
+
+        const NativeXHR = window.XMLHttpRequest;
+        if (NativeXHR && NativeXHR.prototype && typeof NativeXHR.prototype.open === 'function') {
+          const nativeOpen = NativeXHR.prototype.open;
+          const nativeSend = NativeXHR.prototype.send;
+          NativeXHR.prototype.open = function (method, url, async, user, password) {
+            const nextUrl = rewriteUrl(url);
+            try {
+              this.__mp_url = typeof nextUrl === 'string' ? nextUrl : '';
+            } catch {}
+            return nativeOpen.call(this, method, nextUrl, async, user, password);
+          };
+          NativeXHR.prototype.send = function (body) {
+            try {
+              const u = typeof this.__mp_url === 'string' ? this.__mp_url : '';
+              if (u.includes('/api/server/address')) {
+                const remote = new URL(origin);
+                const payload = JSON.stringify({
+                  hostname: remote.hostname,
+                  port: remote.port || '',
+                  protocol: remote.protocol.replace(':', ''),
+                  origin: remote.origin
+                });
+                body = payload;
+                try {
+                  if (typeof this.setRequestHeader === 'function') {
+                    this.setRequestHeader('Content-Type', 'application/json');
+                  }
+                } catch {}
+              }
+            } catch {}
+            return nativeSend.call(this, body);
+          };
+        }
+
+        const nativeFetch = window.fetch;
+        if (typeof nativeFetch === 'function') {
+          window.fetch = function (input, init) {
+            try {
+              if (typeof input === 'string') {
+                const nextUrl = rewriteUrl(input);
+                if (typeof nextUrl === 'string' && nextUrl.includes('/api/server/address')) {
+                  const remote = new URL(origin);
+                  const payload = JSON.stringify({
+                    hostname: remote.hostname,
+                    port: remote.port || '',
+                    protocol: remote.protocol.replace(':', ''),
+                    origin: remote.origin
+                  });
+                  const nextInit = init ? { ...init } : {};
+                  nextInit.method = nextInit.method || 'POST';
+                  nextInit.body = payload;
+                  nextInit.headers = { ...(nextInit.headers || {}), 'Content-Type': 'application/json' };
+                  return nativeFetch.call(this, nextUrl, nextInit);
+                }
+                return nativeFetch.call(this, nextUrl, init);
+              }
+              if (input && typeof input === 'object' && typeof input.url === 'string') {
+                const nextUrl = rewriteUrl(input.url);
+                if (nextUrl !== input.url) {
+                  const req = new Request(nextUrl, input);
+                  return nativeFetch.call(this, req, init);
+                }
+              }
+            } catch {}
+            return nativeFetch.call(this, input, init);
+          };
+        }
+
+        const NativeWebSocket = window.WebSocket;
+        if (typeof NativeWebSocket === 'function') {
+          function PatchedWebSocket(url, protocols) {
+            let next = url;
+            try {
+              if (typeof url === 'string') {
+                const wsUrl = new NativeURL(url, window.location.href);
+                const local = new NativeURL(window.location.origin);
+                const remote = new NativeURL(origin);
+                if (wsUrl.hostname === local.hostname) {
+                  wsUrl.protocol = remote.protocol === 'https:' ? 'wss:' : 'ws:';
+                  wsUrl.hostname = remote.hostname;
+                  wsUrl.port = remote.port;
+                  next = wsUrl.toString();
+                }
+              }
+            } catch {}
+            return protocols !== undefined ? new NativeWebSocket(next, protocols) : new NativeWebSocket(next);
+          }
+          PatchedWebSocket.prototype = NativeWebSocket.prototype;
+          Object.setPrototypeOf(PatchedWebSocket, NativeWebSocket);
+          window.WebSocket = PatchedWebSocket;
+        }
+
+        // 调试模式指示器、水印和弹窗
+        (function debugModeIndicator() {
+          // I love Microsoft
+          
+          // 检查是否在调试模式下运行
+          function isDebugMode() {
+            // 检查是否有调试模式的全局变量
+            if (window.__MICROPANEL_DEBUG_MODE__) {
+              return true;
+            }
+            
+            // 检查URL参数中是否有调试模式标识
+            try {
+              const urlParams = new URLSearchParams(window.location.search);
+              if (urlParams.has('debug') || urlParams.has('debugmode')) {
+                return true;
+              }
+            } catch (e) {
+              // 静默处理错误
+            }
+            
+            // 检查是否有开发人员工具相关的属性
+            const devToolsDetected = !!window.chrome && !!window.chrome.devtools;
+            return devToolsDetected;
+          }
+          
+          // 创建调试模式水印
+          function createDebugWatermark() {
+            // 无论是否存在水印，都重新创建
+            
+            // 先删除旧水印
+            const oldWatermark = document.getElementById('debug-watermark');
+            if (oldWatermark) {
+              oldWatermark.remove();
+            }
+            
+            // 创建新水印
+            const watermark = document.createElement('div');
+            watermark.id = 'debug-watermark';
+            watermark.style.cssText = `
+              position: fixed;
+              bottom: 10px;
+              right: 10px;
+              color: white;
+              padding: 5px 10px;
+              font-size: 12px;
+              z-index: 9999;
+              font-weight: bold;
+              border-radius: 4px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+              transition: all 0.3s ease;
+              background: rgba(0, 0, 0, 0.9);
+            `;
+            watermark.textContent = '当前正在以调试模式运行';
+            
+            // 添加到页面
+            document.body.appendChild(watermark);
+          }
+          
+          // 显示调试模式弹窗
+          function showDebugModeAlert() {
+            // 检查是否已经显示过弹窗
+            if (localStorage.getItem('debugModeAlertShown')) {
+              console.log('Debug mode alert already shown, skipping');
+              return;
+            }
+            
+            console.log('Preparing to show debug mode alert');
+            
+            // 创建弹窗函数
+            function createDebugAlert() {
+              // 检查是否已经存在弹窗
+              if (document.getElementById('debug-popper')) {
+                console.log('Debug alert already exists, skipping creation');
+                return;
+              }
+              
+              console.log('Creating debug mode alert');
+              
+              // 创建弹窗容器
+              const popperContainer = document.createElement('div');
+              popperContainer.id = 'debug-popper';
+              popperContainer.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 10000;
+                background: white;
+                border: 1px solid #e4e7ed;
+                border-radius: 4px;
+                box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                min-width: 300px;
+                max-width: 500px;
+                animation: fadeIn 0.3s ease;
+              `;
+              
+              // 添加动画样式
+              const styleSheet = document.createElement('style');
+              styleSheet.textContent = `
+                @keyframes fadeIn {
+                  from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+                  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                }
+              `;
+              document.head.appendChild(styleSheet);
+              
+              // 创建弹窗内容
+              const popperContent = document.createElement('div');
+              popperContent.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                  <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">调试模式提示</div>
+                  <div style="line-height: 1.5;">当前应用正在调试模式中运行，可能会出现部分功能无法使用或不稳定的情况，请不要将这些问题作为BUG进行反馈</div>
+                </div>
+                <div style="text-align: right;">
+                  <button id="debug-popper-close" style="
+                    padding: 6px 12px;
+                    background: #409eff;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                  ">确定</button>
+                </div>
+              `;
+              
+              popperContainer.appendChild(popperContent);
+              document.body.appendChild(popperContainer);
+              console.log('Debug mode alert created and added to DOM');
+              
+              // 添加关闭按钮事件
+              const closeButton = document.getElementById('debug-popper-close');
+              if (closeButton) {
+                closeButton.addEventListener('click', function() {
+                  console.log('Closing debug mode alert');
+                  popperContainer.remove();
+                  styleSheet.remove();
+                  console.log('Debug mode alert closed');
+                });
+              }
+            }
+            
+            // 延迟创建弹窗，确保DOM已经加载完成
+            console.log('Scheduling debug mode alert creation with 1000ms delay');
+            setTimeout(createDebugAlert, 1000);
+            
+            // 标记弹窗已显示
+            try {
+              localStorage.setItem('debugModeAlertShown', 'true');
+              console.log('Debug mode alert shown status saved to localStorage');
+            } catch (error) {
+              console.error('Failed to save debug mode alert status:', error);
+            }
+          }
+          
+          // 初始化调试模式
+          function initDebugMode() {
+            if (isDebugMode()) {
+              createDebugWatermark();
+              showDebugModeAlert();
+              
+              // 每0.1秒刷新一次水印，防止被删除
+              setInterval(createDebugWatermark, 100);
+              
+              return true;
+            } else {
+              return false;
+            }
+          }
+          
+          // 立即检查一次
+          if (!initDebugMode()) {
+            // 当DOM加载完成后再次检查
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', function() {
+                if (!initDebugMode()) {
+                  // 延迟检查，确保调试模式标识已经注入
+                  setTimeout(function() {
+                    if (!initDebugMode()) {
+                      // 再次延迟检查，确保调试模式标识已经注入
+                      setTimeout(function() {
+                        initDebugMode();
+                      }, 5000);
+                    }
+                  }, 2000);
+                }
+              });
+            } else {
+              // 延迟检查，确保调试模式标识已经注入
+              setTimeout(function() {
+                if (!initDebugMode()) {
+                  // 再次延迟检查，确保调试模式标识已经注入
+                  setTimeout(function() {
+                    initDebugMode();
+                  }, 5000);
+                }
+              }, 2000);
+            }
+          }
+        })();
+
+        // 全屏时隐藏窗口控制按钮
+        (function fullscreenWindowControls() {
+          // I love Microsoft
+          
+          // 检查是否在全屏模式下
+          function checkFullscreen() {
+            // 更精确的全屏检测逻辑
+            const isFullscreen = (
+              !!(document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement || 
+                document.msFullscreenElement)
+            );
+            // I love Microsoft
+            
+            const windowControls = document.getElementById('mp-window-controls');
+            
+            if (windowControls) {
+              if (isFullscreen) {
+                // 全屏时隐藏窗口控制按钮
+                windowControls.style.display = 'none';
+              } else {
+                // 取消全屏时显示窗口控制按钮
+                windowControls.style.display = 'flex';
+              }
+            }
+          }
+          
+          // 监听全屏变化事件
+          document.addEventListener('fullscreenchange', checkFullscreen);
+          document.addEventListener('webkitfullscreenchange', checkFullscreen); // Safari
+          document.addEventListener('mozfullscreenchange', checkFullscreen); // Firefox
+          document.addEventListener('MSFullscreenChange', checkFullscreen); // IE/Edge
+          
+          // 初始检查
+          // 延迟执行初始检查，确保窗口控制按钮已经创建
+          setTimeout(checkFullscreen, 1000);
+        })();
+
+        // 删除指定图标
+        (function removeTargetIcon() {
+          function removeIcon() {
+            try {
+              // 查找所有包含SVG的el-icon元素
+              const icons = document.querySelectorAll('.el-icon');
+              icons.forEach(icon => {
+                const svg = icon.querySelector('svg');
+                if (svg) {
+                  const path = svg.querySelector('path');
+                  if (path) {
+                    // 检查SVG路径是否匹配目标图标
+                    const pathData = path.getAttribute('d');
+                    if (pathData === 'M128 192h768v128H128zm0 256h512v128H128zm0 256h768v128H128zm576-352 192 160-192 128z') {
+                      console.log('Found target icon, removing...');
+                      icon.remove();
+                    }
+                  }
+                }
+              });
+            } catch (error) {
+              console.error('Error removing icon:', error);
+            }
+          }
+
+          // 当DOM加载完成后删除图标
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+              removeIcon();
+              
+              // 使用MutationObserver监控DOM变化，确保图标出现时能及时删除
+              if (window.MutationObserver) {
+                const observer = new MutationObserver(() => {
+                  removeIcon();
+                });
+                try {
+                  observer.observe(document.documentElement, { childList: true, subtree: true });
+                } catch (error) {
+                  console.error('Error setting up MutationObserver:', error);
+                }
+              }
+            });
+          } else {
+            removeIcon();
+            
+            // 使用MutationObserver监控DOM变化，确保图标出现时能及时删除
+            if (window.MutationObserver) {
+              const observer = new MutationObserver(() => {
+                removeIcon();
+              });
+              try {
+                observer.observe(document.documentElement, { childList: true, subtree: true });
+              } catch (error) {
+                console.error('Error setting up MutationObserver:', error);
+              }
+            }
+          }
+        })();
+
+        // 路由变化检测和事件发送
+        (function routeChangeDetection() {
+          // 获取当前路由
+          function getCurrentRoute() {
+            const hash = window.location.hash || '';
+            if (hash.startsWith('#')) {
+              return hash.slice(1);
+            }
+            return '/';
+          }
+
+          // 发送路由变化事件
+          function sendRouteChangeEvent() {
+            const route = getCurrentRoute();
+            if (window.microPanel && window.microPanel.sendRouteChange) {
+              window.microPanel.sendRouteChange(route);
+            }
+          }
+
+          // 监听路由变化
+          window.addEventListener('hashchange', sendRouteChangeEvent);
+
+          // 当DOM加载完成后发送初始路由
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', sendRouteChangeEvent);
+          } else {
+            sendRouteChangeEvent();
+          }
+        })();
+
+        // 上下文菜单事件处理
+        (function contextMenuHandler() {
+          window.addEventListener(
+            'contextmenu',
+            (e) => {
+              if (!e) return;
+              const enable = (e.shiftKey && e.ctrlKey) || (e.shiftKey && e.metaKey);
+              if (!enable) return;
+              try {
+                e.preventDefault();
+                e.stopPropagation();
+              } catch {}
+              if (window.microPanel && window.microPanel.openDevTools) {
+                window.microPanel.openDevTools({ x: Math.round(e.clientX || 0), y: Math.round(e.clientY || 0) });
+              }
+            },
+            true,
+          );
+        })();
+
+        // 自动点击首页菜单项
+        (function autoClickHomeMenuItem() {
+          let clickDebounceTimer = null;
+          let hasClicked = false;
+
+          function clickHomeMenuItem() {
+            // 避免重复执行
+            if (hasClicked) return;
+            
+            // 查找首页菜单项
+            const homeMenuItem = document.querySelector('.el-menu-item[title="首页"]');
+            if (homeMenuItem) {
+              try {
+                // 标记已执行
+                hasClicked = true;
+                
+                // 模拟用户点击
+                homeMenuItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+                homeMenuItem.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+                homeMenuItem.click();
+              } catch {}
+            }
+          }
+
+          // 当DOM加载完成时执行
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+              // 增加延迟，确保DOM完全加载
+              setTimeout(clickHomeMenuItem, 300);
+            });
+          } else {
+            // 立即执行，但增加延迟
+            setTimeout(clickHomeMenuItem, 300);
+          }
+
+          // 当路由变化为首页时也执行（带防抖）
+          window.addEventListener('hashchange', function() {
+            const h = window.location.hash || '';
+            if (!h || h === '#/' || h === '#' || h.startsWith('#/home') || h.startsWith('#/index') || h.startsWith('#/dashboard')) {
+              // 清除之前的定时器
+              if (clickDebounceTimer) {
+                clearTimeout(clickDebounceTimer);
+              }
+              // 设置新的定时器
+              clickDebounceTimer = setTimeout(function() {
+                // 重置标记，允许再次执行
+                hasClicked = false;
+                // 增加延迟，确保DOM稳定
+                setTimeout(clickHomeMenuItem, 200);
+              }, 300);
+            }
+          });
+        })();
+
+        // 设备信息卡片注入
+        (function injectDeviceInfoCard() {
+          // 检查当前是否在关于页面
+          function isAboutPage() {
+            const h = window.location.hash || '';
+            return h === '#/other/about' || h.startsWith('#/other/about?');
+          }
+
+          // 加载设备信息
+          async function loadDeviceInfo() {
+            try {
+              // 尝试获取真实设备信息
+              if (window.microPanel && window.microPanel.getDeviceInfo) {
+                const deviceInfo = await window.microPanel.getDeviceInfo();
+                
+                // 更新设备信息显示，添加元素存在检查
+                const cpuElement = document.getElementById('device-cpu');
+                if (cpuElement) cpuElement.textContent = deviceInfo.cpu;
+                
+                const memoryElement = document.getElementById('device-memory');
+                if (memoryElement) memoryElement.textContent = deviceInfo.memory;
+                
+                const systemElement = document.getElementById('device-system');
+                if (systemElement) systemElement.textContent = deviceInfo.system;
+                
+                const kernelElement = document.getElementById('device-kernel');
+                if (kernelElement) kernelElement.textContent = deviceInfo.kernel;
+                
+                const versionElement = document.getElementById('device-version');
+                if (versionElement) versionElement.textContent = deviceInfo.version;
+              } else {
+                // 如果无法获取真实设备信息，使用模拟数据
+                const deviceInfo = {
+                  cpu: 'Intel Core i7-11700K @ 3.60GHz',
+                  memory: '16 GB DDR4',
+                  system: 'Windows 10 Pro 64-bit',
+                  kernel: '10.0.19044', // Windows内核版本
+                  version: '1.0.0'
+                };
+
+                // 更新设备信息显示，添加元素存在检查
+                const cpuElement = document.getElementById('device-cpu');
+                if (cpuElement) cpuElement.textContent = deviceInfo.cpu;
+                
+                const memoryElement = document.getElementById('device-memory');
+                if (memoryElement) memoryElement.textContent = deviceInfo.memory;
+                
+                const systemElement = document.getElementById('device-system');
+                if (systemElement) systemElement.textContent = deviceInfo.system;
+                
+                const kernelElement = document.getElementById('device-kernel');
+                if (kernelElement) kernelElement.textContent = deviceInfo.kernel;
+                
+                const versionElement = document.getElementById('device-version');
+                if (versionElement) versionElement.textContent = deviceInfo.version;
+              }
+            } catch (error) {
+              console.error('Failed to load device info:', error);
+              // 如果获取设备信息失败，使用默认值
+              const cpuElement = document.getElementById('device-cpu');
+              if (cpuElement) cpuElement.textContent = '未知';
+              
+              const memoryElement = document.getElementById('device-memory');
+              if (memoryElement) memoryElement.textContent = '未知';
+              
+              const systemElement = document.getElementById('device-system');
+              if (systemElement) systemElement.textContent = '未知';
+              
+              const kernelElement = document.getElementById('device-kernel');
+              if (kernelElement) kernelElement.textContent = '未知';
+              
+              const versionElement = document.getElementById('device-version');
+              if (versionElement) versionElement.textContent = '1.0.0';
+            }
+          }
+
+          // 注入设备信息卡片
+          async function injectCard() {
+            // 检查是否在关于页面
+            if (!isAboutPage()) return;
+
+            // 等待DOM加载完成
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', injectCard);
+              return;
+            }
+
+            // 增加延迟，确保页面元素完全渲染
+            setTimeout(async () => {
+              // 查找开源地址的下拉框
+              function findElementContainingText(selectors, text) {
+                for (const selector of selectors) {
+                  const elements = document.querySelectorAll(selector);
+                  for (const element of elements) {
+                    if (element.textContent.includes(text)) {
+                      return element;
+                    }
+                  }
+                }
+                return null;
+              }
+              
+              const openSourceDropdown = findElementContainingText(['.el-collapse-item__header', '.el-dropdown', '.about-collapse-item-header', '.el-card__header'], '开源地址');
+              
+              if (!openSourceDropdown) return;
+
+              // 检查是否已经注入了设备信息卡片
+              const existingCard = document.querySelector('.about-device-info');
+              if (existingCard) {
+                // 如果已经存在，更新设备信息
+                await loadDeviceInfo();
+                return;
+              }
+
+              // 创建设备信息卡片
+              const deviceInfoCard = document.createElement('div');
+              deviceInfoCard.className = 'el-card about-device-info';
+              deviceInfoCard.innerHTML = `
+                <div class="el-card__header">
+                  设备信息
+                </div>
+                <div class="el-card__body">
+                  <div class="device-info-item">
+                    <span class="device-info-label">CPU：</span>
+                    <span class="device-info-value" id="device-cpu">加载中...</span>
+                  </div>
+                  <div class="device-info-item">
+                    <span class="device-info-label">内存：</span>
+                    <span class="device-info-value" id="device-memory">加载中...</span>
+                  </div>
+                  <div class="device-info-item">
+                    <span class="device-info-label">系统：</span>
+                    <span class="device-info-value" id="device-system">加载中...</span>
+                  </div>
+                  <div class="device-info-item">
+                    <span class="device-info-label">内核版本：</span>
+                    <span class="device-info-value" id="device-kernel">加载中...</span>
+                  </div>
+                  <div class="device-info-item">
+                    <span class="device-info-label">MicroPanel版本：</span>
+                    <span class="device-info-value" id="device-version">加载中...</span>
+                  </div>
+                </div>
+              `;
+
+              // 插入到开源地址下拉框的上方
+              openSourceDropdown.parentNode.insertBefore(deviceInfoCard, openSourceDropdown);
+
+              // 加载设备信息
+              await loadDeviceInfo();
+            }, 500);
+          }
+
+          // 添加设备信息卡片的样式
+          function addStyles() {
+            // 检查是否已经添加了样式
+            if (document.getElementById('device-info-styles')) return;
+
+            // 创建样式元素
+            const styleElement = document.createElement('style');
+            styleElement.id = 'device-info-styles';
+            styleElement.textContent = `
+              /* 设备信息卡片样式 */
+              .about-device-info {
+                margin-bottom: 20px;
+              }
+
+              .device-info-item {
+                display: flex;
+                margin-bottom: 10px;
+                align-items: center;
+              }
+
+              .device-info-label {
+                font-weight: 500;
+                width: 140px;
+                color: #606266;
+              }
+
+              .device-info-value {
+                flex: 1;
+                color: #303133;
+              }
+
+              html.dark .device-info-label {
+                color: #909399;
+              }
+
+              html.dark .device-info-value {
+                color: #e4e7ed;
+              }
+            `;
+
+            // 添加到head标签
+            document.head.appendChild(styleElement);
+          }
+
+          // 执行注入
+          addStyles();
+          injectCard();
+
+          // 当路由变化为关于页面时也执行
+          window.addEventListener('hashchange', function() {
+            if (isAboutPage()) {
+              setTimeout(async () => {
+                await injectCard();
+              }, 500);
+            }
+          });
+
+          // 使用MutationObserver监控页面变化，确保卡片在DOM变化后重新注入
+          if (window.MutationObserver) {
+            let scheduled = false;
+            const observer = new MutationObserver(() => {
+              if (scheduled) return;
+              scheduled = true;
+              window.requestAnimationFrame(async () => {
+                scheduled = false;
+                if (isAboutPage()) {
+                  await injectCard();
+                }
+              });
+            });
+            
+            try {
+              observer.observe(document.body, {
+                childList: true,
+                subtree: true
+              });
+            } catch (error) {
+              console.error('Error setting up MutationObserver:', error);
+            }
+          }
+
+          // 定期检查卡片状态，确保卡片持续存在
+          setInterval(async () => {
+            if (isAboutPage()) {
+              await injectCard();
+            }
+          }, 3000);
+        })();
+
+        // 插件安装按钮 - 带路由检测
+        (function() {
+          // 立即执行，不等待DOM加载
+
+          
+          // 移除head中的CSS，避免与内联样式冲突
+          // 所有样式都通过JS内联设置
+          
+          // 检查当前是否在插件管理页面
+          function isPluginPage() {
+            const url = window.location.href || '';
+            const hash = window.location.hash || '';
+            console.log('当前网址:', url);
+            console.log('当前哈希:', hash);
+            
+            // 检查多种可能的路径格式
+            const isPluginPage = url.includes('config/plugins') || 
+                               hash.includes('config/plugins') ||
+                               url.includes('/config/plugins') ||
+                               hash.includes('/config/plugins');
+            
+            console.log('是否在插件页面:', isPluginPage);
+            return isPluginPage;
+          }
+          
+          // 创建按钮
+          function createButton() {
+
+            
+            // 检查body是否存在
+            if (!document.body) {
+
+              return;
+            }
+            
+            // 检查按钮是否已存在
+            const existing = document.querySelector('.add-plugin-btn');
+            if (existing) {
+
+              updateButtonVisibility();
+
+              return;
+            }
+            
+            // 创建按钮容器
+            const container = document.createElement('div');
+            container.className = 'add-plugin-container';
+            container.style.position = 'fixed';
+            container.style.bottom = '50px';
+            container.style.right = '50px';
+            container.style.zIndex = '999999999';
+            container.style.display = 'flex';
+            container.style.flexDirection = 'column';
+            container.style.alignItems = 'flex-end';
+            
+            // 创建主按钮
+            const btn = document.createElement('button');
+            btn.className = 'add-plugin-btn';
+            btn.innerHTML = '+';
+            btn.title = '安装插件';
+            
+            // 强制设置样式，确保按钮可见性可控
+            btn.style.width = '60px';
+            btn.style.height = '60px';
+            btn.style.borderRadius = '10px';
+            btn.style.background = '#86efac';
+            btn.style.color = 'black';
+            btn.style.border = '2px solid #4ade80';
+            btn.style.fontSize = '28px';
+            btn.style.cursor = 'pointer';
+            btn.style.boxShadow = '0 4px 15px rgba(134, 239, 172, 0.4)';
+            btn.style.display = 'flex';
+            btn.style.alignItems = 'center';
+            btn.style.justifyContent = 'center';
+            btn.style.transition = 'none';
+            btn.style.outline = 'none';
+            btn.style.userSelect = 'none';
+            btn.style.webkitAppRegion = 'no-drag';
+            
+            // 创建展开菜单
+            const menu = document.createElement('div');
+            menu.className = 'add-plugin-menu';
+            menu.style.display = 'none';
+            menu.style.flexDirection = 'column';
+            menu.style.gap = '10px';
+            menu.style.marginBottom = '10px';
+            
+            // 创建安装在线插件按钮
+            const onlineBtn = document.createElement('button');
+            onlineBtn.className = 'add-plugin-menu-btn';
+            onlineBtn.innerHTML = '安装在线插件';
+            onlineBtn.style.width = '150px';
+            onlineBtn.style.height = '40px';
+            onlineBtn.style.borderRadius = '8px';
+            onlineBtn.style.background = '#f0f9ff';
+            onlineBtn.style.color = 'black';
+            onlineBtn.style.border = '2px solid #bae6fd';
+            onlineBtn.style.fontSize = '14px';
+            onlineBtn.style.cursor = 'pointer';
+            onlineBtn.style.boxShadow = '0 2px 8px rgba(186, 230, 253, 0.4)';
+            onlineBtn.style.outline = 'none';
+            onlineBtn.style.userSelect = 'none';
+            onlineBtn.style.webkitAppRegion = 'no-drag';
+            
+            // 创建安装自定义插件按钮
+            const customBtn = document.createElement('button');
+            customBtn.className = 'add-plugin-menu-btn';
+            customBtn.innerHTML = '安装自定义插件';
+            customBtn.style.width = '150px';
+            customBtn.style.height = '40px';
+            customBtn.style.borderRadius = '8px';
+            customBtn.style.background = '#f0fdf4';
+            customBtn.style.color = 'black';
+            customBtn.style.border = '2px solid #bbf7d0';
+            customBtn.style.fontSize = '14px';
+            customBtn.style.cursor = 'pointer';
+            customBtn.style.boxShadow = '0 2px 8px rgba(187, 247, 208, 0.4)';
+            customBtn.style.outline = 'none';
+            customBtn.style.userSelect = 'none';
+            customBtn.style.webkitAppRegion = 'no-drag';
+            
+            // 添加按钮到菜单
+            menu.appendChild(onlineBtn);
+            menu.appendChild(customBtn);
+            
+            // 添加菜单和主按钮到容器
+            container.appendChild(menu);
+            container.appendChild(btn);
+            
+            // 添加到body
+            document.body.appendChild(container);
+            
+
+            
+            // 展开/收起状态
+            let isExpanded = false;
+            
+            // 点击事件
+            btn.onclick = function() {
+
+              isExpanded = !isExpanded;
+              if (isExpanded) {
+                menu.style.display = 'flex';
+              } else {
+                menu.style.display = 'none';
+              }
+            };
+            
+            // 安装在线插件点击事件
+            onlineBtn.onclick = function() {
+              console.log('安装在线插件被点击');
+              showOnlinePluginDialog();
+              isExpanded = false;
+              menu.style.display = 'none';
+            };
+            
+            // 安装自定义插件点击事件
+            customBtn.onclick = function() {
+              console.log('安装自定义插件被点击');
+              showCustomPluginDialog();
+              isExpanded = false;
+              menu.style.display = 'none';
+            };
+            
+            // 点击外部关闭菜单
+            document.addEventListener('click', function(e) {
+              if (!container.contains(e.target)) {
+                isExpanded = false;
+                menu.style.display = 'none';
+              }
+            });
+            
+            // 更新按钮显示状态
+            updateButtonVisibility();
+
+          }
+          
+          // 显示在线插件弹窗
+          function showOnlinePluginDialog() {
+            // 创建弹窗容器
+            const dialog = document.createElement('div');
+            dialog.className = 'plugin-dialog';
+            dialog.style.position = 'fixed';
+            dialog.style.top = '50%';
+            dialog.style.left = '50%';
+            dialog.style.transform = 'translate(-50%, -50%)';
+            dialog.style.background = 'white';
+            dialog.style.borderRadius = '12px';
+            dialog.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.3)';
+            dialog.style.padding = '30px';
+            dialog.style.zIndex = '999999999';
+            dialog.style.minWidth = '300px';
+            dialog.style.textAlign = 'center';
+            
+            // 创建标题
+            const title = document.createElement('div');
+            title.style.fontSize = '18px';
+            title.style.fontWeight = 'bold';
+            title.style.marginBottom = '20px';
+            title.style.color = 'black';
+            title.textContent = '安装在线插件';
+            
+            // 创建内容
+            const content = document.createElement('div');
+            content.style.fontSize = '16px';
+            content.style.marginBottom = '30px';
+            content.style.color = 'gray';
+            content.textContent = '敬请期待';
+            
+            // 创建关闭按钮
+            const closeBtn = document.createElement('button');
+            closeBtn.style.padding = '10px 20px';
+            closeBtn.style.background = '#86efac';
+            closeBtn.style.color = 'black';
+            closeBtn.style.border = '2px solid #4ade80';
+            closeBtn.style.borderRadius = '8px';
+            closeBtn.style.fontSize = '14px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.outline = 'none';
+            closeBtn.textContent = '确定';
+            
+            // 关闭按钮点击事件
+            closeBtn.onclick = function() {
+              dialog.remove();
+              backdrop.remove();
+            };
+            
+            // 创建背景遮罩
+            const backdrop = document.createElement('div');
+            backdrop.style.position = 'fixed';
+            backdrop.style.top = '0';
+            backdrop.style.left = '0';
+            backdrop.style.right = '0';
+            backdrop.style.bottom = '0';
+            backdrop.style.background = 'rgba(0, 0, 0, 0.5)';
+            backdrop.style.zIndex = '999999998';
+            
+            // 添加元素到弹窗
+            dialog.appendChild(title);
+            dialog.appendChild(content);
+            dialog.appendChild(closeBtn);
+            
+            // 添加到body
+            document.body.appendChild(backdrop);
+            document.body.appendChild(dialog);
+          }
+          
+          // 显示自定义插件弹窗
+          function showCustomPluginDialog() {
+            // 创建弹窗容器
+            const dialog = document.createElement('div');
+            dialog.className = 'plugin-dialog';
+            dialog.style.position = 'fixed';
+            dialog.style.top = '50%';
+            dialog.style.left = '50%';
+            dialog.style.transform = 'translate(-50%, -50%)';
+            dialog.style.background = 'white';
+            dialog.style.borderRadius = '12px';
+            dialog.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.3)';
+            dialog.style.padding = '30px';
+            dialog.style.zIndex = '999999999';
+            dialog.style.minWidth = '400px';
+            
+            // 创建标题
+            const title = document.createElement('div');
+            title.style.fontSize = '18px';
+            title.style.fontWeight = 'bold';
+            title.style.marginBottom = '20px';
+            title.style.color = 'black';
+            title.textContent = '请输入插件地址或git clone命令';
+            
+            // 创建输入框
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.style.width = '100%';
+            input.style.padding = '12px';
+            input.style.border = '2px solid #ddd';
+            input.style.borderRadius = '8px';
+            input.style.fontSize = '14px';
+            input.style.marginBottom = '20px';
+            input.style.boxSizing = 'border-box';
+            input.placeholder = '例如: https://github.com/username/plugin.git 或 git clone https://github.com/username/plugin.git';
+            
+            // 创建进度条容器
+            const progressContainer = document.createElement('div');
+            progressContainer.style.display = 'none';
+            progressContainer.style.marginBottom = '20px';
+            
+            // 创建进度条
+            const progressBar = document.createElement('div');
+            progressBar.style.width = '0%';
+            progressBar.style.height = '8px';
+            progressBar.style.background = '#86efac';
+            progressBar.style.borderRadius = '4px';
+            progressBar.style.transition = 'width 0.3s ease';
+            
+            // 创建进度文本
+            const progressText = document.createElement('div');
+            progressText.style.fontSize = '12px';
+            progressText.style.color = 'gray';
+            progressText.style.marginTop = '5px';
+            progressText.textContent = '准备中...';
+            
+            // 添加进度条元素
+            progressContainer.appendChild(progressBar);
+            progressContainer.appendChild(progressText);
+            
+            // 创建按钮容器
+            const btnContainer = document.createElement('div');
+            btnContainer.style.display = 'flex';
+            btnContainer.style.gap = '10px';
+            btnContainer.style.justifyContent = 'flex-end';
+            
+            // 创建取消按钮
+            const cancelBtn = document.createElement('button');
+            cancelBtn.style.padding = '10px 20px';
+            cancelBtn.style.background = '#f3f4f6';
+            cancelBtn.style.color = 'black';
+            cancelBtn.style.border = '2px solid #d1d5db';
+            cancelBtn.style.borderRadius = '8px';
+            cancelBtn.style.fontSize = '14px';
+            cancelBtn.style.cursor = 'pointer';
+            cancelBtn.style.outline = 'none';
+            cancelBtn.textContent = '取消';
+            
+            // 创建安装按钮
+            const installBtn = document.createElement('button');
+            installBtn.style.padding = '10px 20px';
+            installBtn.style.background = '#86efac';
+            installBtn.style.color = 'black';
+            installBtn.style.border = '2px solid #4ade80';
+            installBtn.style.borderRadius = '8px';
+            installBtn.style.fontSize = '14px';
+            installBtn.style.cursor = 'pointer';
+            installBtn.style.outline = 'none';
+            installBtn.textContent = '安装';
+            
+            // 添加按钮到容器
+            btnContainer.appendChild(cancelBtn);
+            btnContainer.appendChild(installBtn);
+            
+            // 创建背景遮罩
+            const backdrop = document.createElement('div');
+            backdrop.style.position = 'fixed';
+            backdrop.style.top = '0';
+            backdrop.style.left = '0';
+            backdrop.style.right = '0';
+            backdrop.style.bottom = '0';
+            backdrop.style.background = 'rgba(0, 0, 0, 0.5)';
+            backdrop.style.zIndex = '999999998';
+            
+            // 添加元素到弹窗
+            dialog.appendChild(title);
+            dialog.appendChild(input);
+            dialog.appendChild(progressContainer);
+            dialog.appendChild(btnContainer);
+            
+            // 添加到body
+            document.body.appendChild(backdrop);
+            document.body.appendChild(dialog);
+            
+            // 取消按钮点击事件
+            cancelBtn.onclick = function() {
+              dialog.remove();
+              backdrop.remove();
+            };
+            
+            // 安装按钮点击事件
+            installBtn.onclick = function() {
+              const url = input.value.trim();
+              if (!url) {
+                alert('请输入插件地址或git clone命令');
+                return;
+              }
+              
+              // 处理git clone命令
+              let processedUrl = url;
+              if (url.startsWith('git clone')) {
+                // 提取URL部分
+                const parts = url.split(' ');
+                for (let i = 1; i < parts.length; i++) {
+                  if (parts[i].startsWith('http') || parts[i].startsWith('git@')) {
+                    processedUrl = parts[i];
+                    break;
+                  }
+                }
+              }
+              
+              // 清理URL，确保格式正确
+              processedUrl = processedUrl.trim();
+              // 移除可能的引号
+              if ((processedUrl.startsWith('"') && processedUrl.endsWith('"')) || 
+                  (processedUrl.startsWith('\'') && processedUrl.endsWith('\''))) {
+                processedUrl = processedUrl.substring(1, processedUrl.length - 1);
+              }
+              
+              console.log('处理后的URL:', processedUrl);
+              if (!processedUrl) {
+                alert('请输入有效的插件地址');
+                return;
+              }
+              
+              // 显示进度条
+              progressContainer.style.display = 'block';
+              progressText.textContent = '正在安装...';
+              
+              // 禁用安装和取消按钮
+              installBtn.disabled = true;
+              installBtn.style.opacity = '0.6';
+              installBtn.style.cursor = 'not-allowed';
+              
+              cancelBtn.disabled = true;
+              cancelBtn.style.opacity = '0.6';
+              cancelBtn.style.cursor = 'not-allowed';
+              
+              // 解析插件名函数
+              function extractPluginName(url) {
+                let name = '';
+                // 移除.git后缀
+                let cleanUrl = url.replace(/\.git$/, '');
+                // 提取最后一段
+                const parts = cleanUrl.split('/');
+                for (let i = parts.length - 1; i >= 0; i--) {
+                  if (parts[i]) {
+                    name = parts[i];
+                    break;
+                  }
+                }
+                // 移除可能的特殊字符
+                name = name.replace(/[^a-zA-Z0-9_-]/g, '');
+                return name;
+              }
+              
+              // 提取插件名
+              const pluginName = extractPluginName(processedUrl);
+              console.log('提取的插件名:', pluginName);
+              
+              // 提取插件目录名
+              const pluginDirName = pluginName;
+              console.log('插件目录名:', pluginDirName);
+              
+              // 构建WebSocket URL
+              const wsUrl = `ws://${window.location.host}/micro/webui/term`;
+              console.log('WebSocket URL:', wsUrl);
+              
+              // 创建WebSocket连接
+              let ws = null;
+              let installationError = false;
+              let errorMessage = '';
+              let errorLogs = [];
+              let commandCompleted = false;
+              let currentStep = 0;
+              let installationSteps = [];
+              let currentStepIndex = 0;
+              
+              // 执行安装
+              function executeInstallation(removeDir = false) {
+                currentStep = 2;
+                console.log('执行插件安装:', removeDir ? '需要删除目录' : '不需要删除目录');
+                
+                // 创建WebSocket连接
+                ws = new WebSocket(wsUrl);
+                
+                // 重置安装状态
+                installationError = false;
+                errorMessage = '';
+                errorLogs = [];
+                commandCompleted = false;
+                installationSteps = [];
+                currentStepIndex = 0;
+                
+                // 设置安装步骤
+                if (removeDir) {
+                  installationSteps = [
+                    {
+                      name: '删除旧目录',
+                      command: `cd plugins&&export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && rm -rf ./${pluginDirName}`
+                    },
+                    {
+                      name: '克隆仓库',
+                      command: `cd plugins&&export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && git clone --progress ${processedUrl} ./${pluginDirName}`
+                    },
+                    {
+                      name: '安装依赖',
+                      command: `cd plugins&&export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && pnpm install --filter=${pluginName}`
+                    }
+                  ];
+                } else {
+                  installationSteps = [
+                    {
+                      name: '克隆仓库',
+                      command: `cd plugins&&export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && git clone --progress ${processedUrl} ./${pluginDirName}`
+                    },
+                    {
+                      name: '安装依赖',
+                      command: `cd plugins&&export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && pnpm install --filter=${pluginName}`
+                    }
+                  ];
+                }
+                
+                ws.onopen = function() {
+                  console.log('WebSocket连接已打开');
+                  try {
+                    // 执行第一步
+                    executeNextStep();
+                  } catch (error) {
+                    console.error('发送命令失败:', error);
+                    handleInstallationError(`发送命令失败: ${error.message}`);
+                  }
+                };
+                
+                ws.onmessage = function(event) {
+                  try {
+                    console.log('收到WebSocket消息:', event.data);
+                    // 处理进度信息
+                    let data = event.data;
+                    
+                    // 尝试解析JSON格式的消息
+                    let jsonData = null;
+                    try {
+                      jsonData = JSON.parse(data);
+                      if (jsonData && jsonData.action === 'stdout' && jsonData.params) {
+                        data = jsonData.params;
+                      }
+                    } catch (e) {
+                      // 不是JSON格式，直接使用
+                    }
+                    
+                    // 检查是否是直接收到的JSON格式命令结束消息
+                    if (jsonData && jsonData.type === 'exec' && jsonData.action === 'stdout' && jsonData.params && jsonData.params.includes('Command finished with code')) {
+                      const match = jsonData.params.match(/Command finished with code (\d+)/);
+                      if (match) {
+                        const code = parseInt(match[1]);
+                        console.log('命令退出码:', code);
+                        
+                        // 检查是否是因为目录已存在导致的非零退出码
+                        const isDirExistsError = errorLogs.some(log => log.includes('already exists'));
+                        
+                        if (code !== 0) {
+                          
+                          if (isDirExistsError && currentStepIndex === 1) {
+                            // git clone 报文件已存在，不需要安装依赖
+                            console.log('git clone 报文件已存在，不需要安装依赖');
+                            installationError = true;
+                            errorMessage = '安装失败: 插件目录已存在';
+                            progressText.textContent = '安装失败: 插件目录已存在';
+                            
+                            // 延迟关闭WebSocket连接，确保所有数据都已处理
+                            setTimeout(function() {
+                              console.log('git clone 失败，关闭WebSocket连接');
+                              try {
+                                ws.close(1000, 'Git clone failed');
+                              } catch (error) {
+                                console.error('关闭连接失败:', error);
+                              }
+                            }, 1000);
+                          } else {
+                            // 其他错误
+                            installationError = true;
+                            // 构建错误信息，包含退出码和错误日志
+                            const logs = errorLogs.filter(log => log.trim()).join('\n');
+                            errorMessage = `安装失败: 命令执行失败，退出码 ${code}\n${logs}`;
+                            console.error(errorMessage);
+                            progressText.textContent = `安装失败: 退出码 ${code}`;
+                            
+                            // 延迟关闭WebSocket连接，确保所有数据都已处理
+                            setTimeout(function() {
+                              console.log('命令执行失败，关闭WebSocket连接');
+                              try {
+                                ws.close(1000, 'Command failed');
+                              } catch (error) {
+                                console.error('关闭连接失败:', error);
+                              }
+                            }, 1000);
+                          }
+                        } else {
+                          // 返回码为0，判定为执行成功
+                          console.log('命令执行成功，返回码:', code);
+                          
+                          // 当前步骤执行成功，执行下一步
+                          currentStepIndex++;
+                          console.log(`步骤 ${currentStepIndex}/${installationSteps.length} 执行完成`);
+                          
+                          if (currentStepIndex >= installationSteps.length) {
+                            // 所有步骤执行完成
+                            console.log('所有安装步骤执行完成');
+                            commandCompleted = true;
+                            // 延迟关闭WebSocket连接，确保所有数据都已处理
+                            setTimeout(function() {
+                              console.log('所有命令执行完成，关闭WebSocket连接');
+                              try {
+                                ws.close(1000, 'All commands completed');
+                              } catch (error) {
+                                console.error('关闭连接失败:', error);
+                              }
+                            }, 1000);
+                          } else {
+                            // 执行下一步
+                            executeNextStep();
+                          }
+                        }
+                        return;
+                      }
+                    }
+                    
+                    // 收集错误日志
+                    if (data) {
+                      // 过滤掉进度相关的消息
+                      if (!data.includes('Receiving objects:') && !data.includes('Resolving deltas:') && !data.includes('remote:') && !data.includes('Receiving') && !data.includes('Resolving') && !data.includes('added') && !data.includes('packages')) {
+                        errorLogs.push(data);
+                      }
+                      
+                      // 检查是否有错误
+                      if (data.includes('fatal:') || data.includes('error:') || data.includes('ERR_')) {
+                        // 忽略包含"Too many arguments."的消息
+                        if (data.includes('Too many arguments.')) {
+                          console.log('忽略包含"Too many arguments."的消息');
+                          return;
+                        }
+                        
+                        // 检查是否是目录已存在的错误
+                        if (data.includes('already exists')) {
+                          console.log('插件已安装，显示确认弹窗');
+                          // 不关闭WebSocket连接，直接显示确认弹窗
+                          // 不设置错误状态，保持弹窗打开
+                          progressText.textContent = '检测到插件已安装';
+                          showPluginExistsDialog();
+                        } else {
+                          installationError = true;
+                          errorMessage = `安装失败: ${data}`;
+                          console.error('安装失败:', data);
+                          // 提取关键错误信息
+                          const errorLines = data.split('\n');
+                          const fatalError = errorLines.find(line => line.includes('fatal:') || line.includes('error:') || line.includes('ERR_'));
+                          if (fatalError) {
+                            progressText.textContent = `安装失败: ${fatalError}`;
+                          } else {
+                            progressText.textContent = '安装失败: 发生错误';
+                          }
+                        }
+                      }
+                    }
+                    
+                    // 检查是否有命令结束信息
+                    if (data && data.includes('Command finished with code')) {
+                      const match = data.match(/Command finished with code (\d+)/);
+                      if (match) {
+                        const code = parseInt(match[1]);
+                        console.log('命令退出码:', code);
+                        
+                        // 检查是否是因为目录已存在导致的非零退出码
+                        const isDirExistsError = errorLogs.some(log => log.includes('already exists'));
+                        
+                        if (code !== 0) {
+                          
+                          if (isDirExistsError && currentStepIndex === 1) {
+                            // git clone 报文件已存在，不需要安装依赖
+                            console.log('git clone 报文件已存在，不需要安装依赖');
+                            installationError = true;
+                            errorMessage = '安装失败: 插件目录已存在';
+                            progressText.textContent = '安装失败: 插件目录已存在';
+                            
+                            // 延迟关闭WebSocket连接，确保所有数据都已处理
+                            setTimeout(function() {
+                              console.log('git clone 失败，关闭WebSocket连接');
+                              try {
+                                ws.close(1000, 'Git clone failed');
+                              } catch (error) {
+                                console.error('关闭连接失败:', error);
+                              }
+                            }, 1000);
+                          } else {
+                            // 其他错误
+                            installationError = true;
+                            // 构建错误信息，包含退出码和错误日志
+                            const logs = errorLogs.filter(log => log.trim()).join('\n');
+                            errorMessage = `安装失败: 命令执行失败，退出码 ${code}\n${logs}`;
+                            console.error(errorMessage);
+                            progressText.textContent = `安装失败: 退出码 ${code}`;
+                            
+                            // 延迟关闭WebSocket连接，确保所有数据都已处理
+                            setTimeout(function() {
+                              console.log('命令执行失败，关闭WebSocket连接');
+                              try {
+                                ws.close(1000, 'Command failed');
+                              } catch (error) {
+                                console.error('关闭连接失败:', error);
+                              }
+                            }, 1000);
+                          }
+                        } else {
+                          // 返回码为0，判定为执行成功
+                          console.log('命令执行成功，返回码:', code);
+                          
+                          // 当前步骤执行成功，执行下一步
+                          currentStepIndex++;
+                          console.log(`步骤 ${currentStepIndex}/${installationSteps.length} 执行完成`);
+                          
+                          if (currentStepIndex >= installationSteps.length) {
+                            // 所有步骤执行完成
+                            console.log('所有安装步骤执行完成');
+                            commandCompleted = true;
+                            // 延迟关闭WebSocket连接，确保所有数据都已处理
+                            setTimeout(function() {
+                              console.log('所有命令执行完成，关闭WebSocket连接');
+                              try {
+                                ws.close(1000, 'All commands completed');
+                              } catch (error) {
+                                console.error('关闭连接失败:', error);
+                              }
+                            }, 1000);
+                          } else {
+                            // 执行下一步
+                            executeNextStep();
+                          }
+                        }
+                      }
+                    }
+                    
+                    // 尝试解析进度
+                    if (data && data.includes('Receiving objects:')) {
+                      const match = data.match(/Receiving objects:\s+(\d+%)/);
+                      if (match) {
+                        const progress = match[1];
+                        progressBar.style.width = progress;
+                        progressText.textContent = `正在下载: ${progress}`;
+                      }
+                    } else if (data && data.includes('Resolving deltas:')) {
+                      const match = data.match(/Resolving deltas:\s+(\d+%)/);
+                      if (match) {
+                        const progress = match[1];
+                        progressBar.style.width = progress;
+                        progressText.textContent = `正在解析: ${progress}`;
+                      }
+                    } else if (data && data.includes('pnpm install')) {
+                      progressText.textContent = '正在安装依赖...';
+                    } else if (data && data.includes('rm -rf')) {
+                      // 处理卸载过程中的消息
+                      progressText.textContent = '正在卸载已安装的部分...';
+                    }
+                  } catch (error) {
+                    console.error('处理消息失败:', error);
+                    handleInstallationError(`处理消息失败: ${error.message}`);
+                  }
+                };
+                
+                // 执行下一步
+                function executeNextStep() {
+                  if (currentStepIndex >= installationSteps.length) {
+                    // 所有步骤执行完成
+                    console.log('所有安装步骤执行完成');
+                    commandCompleted = true;
+                    return;
+                  }
+                  
+                  const currentStep = installationSteps[currentStepIndex];
+                  console.log(`执行步骤 ${currentStepIndex + 1}/${installationSteps.length}: ${currentStep.name}`);
+                  
+                  // 显示当前步骤状态
+                  progressText.textContent = `正在${currentStep.name}...`;
+                  
+                  // 构建发送的包
+                  const packageData = {
+                    type: "exec",
+                    params: {
+                      cmd: currentStep.command,
+                      path: "."
+                    }
+                  };
+                  
+                  console.log('发送命令:', currentStep.command);
+                  console.log('发送包:', packageData);
+                  ws.send(JSON.stringify(packageData));
+                }
+                
+                ws.onclose = function(event) {
+                  console.log('WebSocket连接已关闭:', event.code, event.reason);
+                  
+                  // 恢复按钮状态
+                  installBtn.disabled = false;
+                  installBtn.style.opacity = '1';
+                  installBtn.style.cursor = 'pointer';
+                  
+                  cancelBtn.disabled = false;
+                  cancelBtn.style.opacity = '1';
+                  cancelBtn.style.cursor = 'pointer';
+                  
+                  if (!commandCompleted) {
+                    // 连接意外关闭
+                    installationError = true;
+                    errorMessage = `连接意外关闭: ${event.code} ${event.reason}`;
+                    console.error('连接意外关闭:', event);
+                    progressText.textContent = `安装失败: 连接意外关闭`;
+                  }
+                  
+                  if (installationError) {
+                    // 安装失败
+                    console.error('安装失败:', errorMessage);
+                    // 显示完整的错误信息
+                    const fullErrorMessage = errorMessage.length > 100 ? errorMessage.substring(0, 100) + '...' : errorMessage;
+                    progressText.textContent = fullErrorMessage;
+                    
+                    // 不关闭弹窗，让用户查看错误信息
+                  } else {
+                    // 安装成功
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '安装完成';
+                    
+                    // 延迟显示成功提示
+                    setTimeout(function() {
+                      // 关闭当前弹窗
+                      dialog.remove();
+                      backdrop.remove();
+                      
+                      // 创建成功提示弹窗
+                      const successDialog = document.createElement('div');
+                      successDialog.style.position = 'fixed';
+                      successDialog.style.top = '50%';
+                      successDialog.style.left = '50%';
+                      successDialog.style.transform = 'translate(-50%, -50%)';
+                      successDialog.style.background = 'white';
+                      successDialog.style.borderRadius = '12px';
+                      successDialog.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.3)';
+                      successDialog.style.padding = '30px';
+                      successDialog.style.zIndex = '999999999';
+                      successDialog.style.minWidth = '300px';
+                      successDialog.style.textAlign = 'center';
+                      
+                      // 创建标题
+                      const successTitle = document.createElement('div');
+                      successTitle.style.fontSize = '18px';
+                      successTitle.style.fontWeight = 'bold';
+                      successTitle.style.marginBottom = '20px';
+                      successTitle.style.color = 'black';
+                      successTitle.textContent = '安装成功';
+                      
+                      // 创建内容
+                      const successContent = document.createElement('div');
+                      successContent.style.fontSize = '16px';
+                      successContent.style.marginBottom = '30px';
+                      successContent.style.color = 'gray';
+                      successContent.textContent = '安装成功，请重启Bot';
+                      
+                      // 创建确定按钮
+                      const successBtn = document.createElement('button');
+                      successBtn.style.padding = '10px 20px';
+                      successBtn.style.background = '#86efac';
+                      successBtn.style.color = 'black';
+                      successBtn.style.border = '2px solid #4ade80';
+                      successBtn.style.borderRadius = '8px';
+                      successBtn.style.fontSize = '14px';
+                      successBtn.style.cursor = 'pointer';
+                      successBtn.style.outline = 'none';
+                      successBtn.textContent = '确定';
+                      
+                      // 创建背景遮罩
+                      const successBackdrop = document.createElement('div');
+                      successBackdrop.style.position = 'fixed';
+                      successBackdrop.style.top = '0';
+                      successBackdrop.style.left = '0';
+                      successBackdrop.style.right = '0';
+                      successBackdrop.style.bottom = '0';
+                      successBackdrop.style.background = 'rgba(0, 0, 0, 0.5)';
+                      successBackdrop.style.zIndex = '999999998';
+                      
+                      // 添加元素到弹窗
+                      successDialog.appendChild(successTitle);
+                      successDialog.appendChild(successContent);
+                      successDialog.appendChild(successBtn);
+                      
+                      // 添加到body
+                      document.body.appendChild(successBackdrop);
+                      document.body.appendChild(successDialog);
+                      
+                      // 确定按钮点击事件
+                      successBtn.onclick = function() {
+                        successDialog.remove();
+                        successBackdrop.remove();
+                      };
+                    }, 500);
+                  }
+                };
+                
+                ws.onerror = function(error) {
+                  console.error('WebSocket错误:', error);
+                  handleInstallationError(`WebSocket错误: ${error.message}`);
+                };
+              }
+              
+              // 显示插件已安装确认弹窗
+              function showPluginExistsDialog() {
+                console.log('显示插件已安装确认弹窗');
+                
+                // 检查是否已有弹窗存在
+                if (document.querySelector('.plugin-exists-dialog')) {
+                  console.log('弹窗已存在，不重复创建');
+                  return;
+                }
+                
+                // 创建弹窗容器
+                const confirmDialog = document.createElement('div');
+                confirmDialog.className = 'plugin-exists-dialog';
+                confirmDialog.style.position = 'fixed';
+                confirmDialog.style.top = '50%';
+                confirmDialog.style.left = '50%';
+                confirmDialog.style.transform = 'translate(-50%, -50%)';
+                confirmDialog.style.background = 'white';
+                confirmDialog.style.borderRadius = '12px';
+                confirmDialog.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.3)';
+                confirmDialog.style.padding = '30px';
+                confirmDialog.style.zIndex = '999999999';
+                confirmDialog.style.minWidth = '300px';
+                confirmDialog.style.textAlign = 'center';
+                
+                // 创建标题
+                const confirmTitle = document.createElement('div');
+                confirmTitle.style.fontSize = '18px';
+                confirmTitle.style.fontWeight = 'bold';
+                confirmTitle.style.marginBottom = '20px';
+                confirmTitle.style.color = 'black';
+                confirmTitle.textContent = '插件已安装';
+                
+                // 创建内容
+                const confirmContent = document.createElement('div');
+                confirmContent.style.fontSize = '16px';
+                confirmContent.style.marginBottom = '30px';
+                confirmContent.style.color = 'gray';
+                confirmContent.textContent = `该插件已安装，是否需要卸载已安装的部分并重新安装该插件？`;
+                
+                // 创建按钮容器
+                const btnContainer = document.createElement('div');
+                btnContainer.style.display = 'flex';
+                btnContainer.style.gap = '10px';
+                btnContainer.style.justifyContent = 'center';
+                
+                // 创建取消按钮
+                const cancelBtn = document.createElement('button');
+                cancelBtn.style.padding = '10px 20px';
+                cancelBtn.style.background = '#f3f4f6';
+                cancelBtn.style.color = 'black';
+                cancelBtn.style.border = '2px solid #d1d5db';
+                cancelBtn.style.borderRadius = '8px';
+                cancelBtn.style.fontSize = '14px';
+                cancelBtn.style.cursor = 'pointer';
+                cancelBtn.style.outline = 'none';
+                cancelBtn.textContent = '取消';
+                
+                // 创建确定按钮
+                const confirmBtn = document.createElement('button');
+                confirmBtn.style.padding = '10px 20px';
+                confirmBtn.style.background = '#86efac';
+                confirmBtn.style.color = 'black';
+                confirmBtn.style.border = '2px solid #4ade80';
+                confirmBtn.style.borderRadius = '8px';
+                confirmBtn.style.fontSize = '14px';
+                confirmBtn.style.cursor = 'pointer';
+                confirmBtn.style.outline = 'none';
+                confirmBtn.textContent = '卸载并重新安装';
+                
+                // 创建背景遮罩
+                const confirmBackdrop = document.createElement('div');
+                confirmBackdrop.className = 'plugin-exists-backdrop';
+                confirmBackdrop.style.position = 'fixed';
+                confirmBackdrop.style.top = '0';
+                confirmBackdrop.style.left = '0';
+                confirmBackdrop.style.right = '0';
+                confirmBackdrop.style.bottom = '0';
+                confirmBackdrop.style.background = 'rgba(0, 0, 0, 0.5)';
+                confirmBackdrop.style.zIndex = '999999998';
+                
+                // 添加元素到弹窗
+                btnContainer.appendChild(cancelBtn);
+                btnContainer.appendChild(confirmBtn);
+                confirmDialog.appendChild(confirmTitle);
+                confirmDialog.appendChild(confirmContent);
+                confirmDialog.appendChild(btnContainer);
+                
+                // 添加到body
+                document.body.appendChild(confirmBackdrop);
+                document.body.appendChild(confirmDialog);
+                
+                // 取消按钮点击事件
+                cancelBtn.onclick = function() {
+                  console.log('用户取消安装');
+                  // 关闭WebSocket连接
+                  if (ws) {
+                    try {
+                      ws.close(1000, 'User cancelled installation');
+                    } catch (error) {
+                      console.error('关闭WebSocket连接失败:', error);
+                    }
+                  }
+                  confirmDialog.remove();
+                  confirmBackdrop.remove();
+                  // 关闭安装弹窗
+                  dialog.remove();
+                  backdrop.remove();
+                };
+                
+                // 确定按钮点击事件
+                confirmBtn.onclick = function() {
+                  console.log('用户确认卸载并重新安装');
+                  confirmDialog.remove();
+                  confirmBackdrop.remove();
+                  
+                  // 显示正在卸载的状态
+                  progressText.textContent = '正在卸载已安装的部分...';
+                  
+                  // 确保按钮保持禁用状态
+                  installBtn.disabled = true;
+                  installBtn.style.opacity = '0.6';
+                  installBtn.style.cursor = 'not-allowed';
+                  
+                  cancelBtn.disabled = true;
+                  cancelBtn.style.opacity = '0.6';
+                  cancelBtn.style.cursor = 'not-allowed';
+                  
+                  // 在同一个WebSocket连接中分开执行命令
+                  if (ws && ws.readyState === WebSocket.OPEN) {
+                    console.log('在同一个WebSocket连接中分开执行命令');
+                    
+                    // 构建删除目录命令
+                    const removeCommand = `cd plugins&&export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && rm -rf ./${pluginDirName}`;
+                    console.log('执行删除目录命令:', removeCommand);
+                    
+                    // 发送删除目录命令
+                    const removePackage = {
+                      type: "exec",
+                      params: {
+                        cmd: removeCommand,
+                        path: "."
+                      }
+                    };
+                    console.log('发送删除目录包:', removePackage);
+                    ws.send(JSON.stringify(removePackage));
+                    
+                    // 注意：后续命令会在WebSocket的onmessage事件中处理
+                  } else {
+                    // 如果连接已关闭，执行安装（带删除目录）
+                    console.log('WebSocket连接已关闭，重新创建连接执行安装');
+                    executeInstallation(true);
+                  }
+                };
+              }
+
+              
+              // 处理安装错误
+              function handleInstallationError(msg) {
+                console.error('安装错误:', msg);
+                installationError = true;
+                errorMessage = msg;
+                progressText.textContent = msg;
+                
+                // 恢复按钮状态
+                installBtn.disabled = false;
+                installBtn.style.opacity = '1';
+                installBtn.style.cursor = 'pointer';
+                
+                cancelBtn.disabled = false;
+                cancelBtn.style.opacity = '1';
+                cancelBtn.style.cursor = 'pointer';
+                
+                // 不关闭弹窗，让用户查看错误信息
+              }
+              
+              // 开始安装流程
+              executeInstallation();
+            };
+          }
+          
+          // 更新按钮显示状态
+          function updateButtonVisibility() {
+  
+            
+            const container = document.querySelector('.add-plugin-container');
+            const button = document.querySelector('.add-plugin-btn');
+            
+            if (container && button) {
+
+              
+              const onPluginPage = isPluginPage();
+
+              
+              if (onPluginPage) {
+
+                container.style.display = 'flex';
+                button.style.opacity = '1';
+                button.style.visibility = 'visible';
+                button.style.pointerEvents = 'auto';
+
+              } else {
+
+                container.style.display = 'none';
+                button.style.opacity = '0';
+                button.style.visibility = 'hidden';
+                button.style.pointerEvents = 'none';
+
+              }
+            } else {
+
+              createButton();
+            }
+            
+
+          }
+          
+          // 立即创建
+          createButton();
+          
+          // 强制重建一次按钮以应用新功能
+          setTimeout(function() {
+            const container = document.querySelector('.add-plugin-container');
+            if (container) container.remove();
+            const existing = document.querySelector('.add-plugin-btn');
+            if (existing) existing.remove();
+            createButton();
+          }, 100);
+          
+          // 再次强制重建，确保新功能生效
+          setTimeout(function() {
+            const container = document.querySelector('.add-plugin-container');
+            if (container) container.remove();
+            const existing = document.querySelector('.add-plugin-btn');
+            if (existing) existing.remove();
+            createButton();
+          }, 500);
+          
+          // 每秒检查一次，确保按钮存在并更新显示状态
+          setInterval(function() {
+            // 只在按钮不存在时创建
+            if (!document.querySelector('.add-plugin-btn')) {
+              createButton();
+            }
+            updateButtonVisibility();
+          }, 1000);
+          
+          // 监听路由变化
+          window.addEventListener('hashchange', function() {
+            console.log('路由发生变化');
+            updateButtonVisibility();
+          });
+          
+          // 监听页面加载完成
+          window.addEventListener('load', function() {
+            console.log('页面加载完成');
+            updateButtonVisibility();
+          });
+          
+          // 监听DOM内容加载完成
+          document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM内容加载完成');
+            updateButtonVisibility();
+          });
+          
+
+        })();
+
+        // 美化主页
+        (function beautifyHomePage() {
+          // 内容数组
+          const contents = [
+            { "id": 1, "category": "greet", "content": "愿风神护佑你，蒙德的蒲公英酒已经准备好了。" },
+            { "id": 2, "category": "tips", "content": "圣遗物暴击率和暴击伤害通常按 1:2 的比例堆叠，收益最高。" },
+            { "id": 3, "category": "greet", "content": "今天也是元气满满的一天！要不要和宵宫一起去放烟花？" },
+            { "id": 4, "category": "tips", "content": "激化反应（雷+草）是目前版本中低练度玩家逆袭深渊的神器。" },
+            { "id": 5, "category": "greet", "content": "既然契约已成，那今日的冒险也请务必准时参加。" },
+            { "id": 6, "category": "tips", "content": "树脂永远优先留给角色等级和武器突破，圣遗物是最后才考虑的。" },
+            { "id": 7, "category": "greet", "content": "旅行者，该出发了，前面的区域以后再来探索吧！" },
+            { "id": 8, "category": "tips", "content": "做一个捕风瓶能解决 80% 的大世界爬山难题。" },
+            { "id": 9, "category": "greet", "content": "愿你此行，终抵群星。" },
+            { "id": 10, "category": "tips", "content": "班尼特、行秋、香菱这\"三幻神\"一定要练，强度保值率极高。" },
+            { "id": 11, "category": "greet", "content": "还没睡吗？在等纳西妲在梦境里给你送礼物？" },
+            { "id": 12, "category": "tips", "content": "钟离的盾是安逸的代名词，没有的话莱依拉也是很好的下位替代。" },
+            { "id": 13, "category": "greet", "content": "听说今天的委托奖励有紫色矿石，要一起去挖矿吗？" },
+            { "id": 14, "category": "tips", "content": "采集特产时带上可莉、七七或林尼，小地图会显示特产位置。" },
+            { "id": 15, "category": "greet", "content": "若知是故人归来，我应备下清茶，共赏这一季的琉璃百合。" },
+            { "id": 16, "category": "tips", "content": "砂糖的Q技能可以染元素，这对于扩散反应的覆盖至关重要。" },
+            { "id": 17, "category": "greet", "content": "早安，今天也要像派蒙一样，吃饱喝足再出发哦！" },
+            { "id": 18, "category": "tips", "content": "钟离的长E或雷泽的长E可以瞬间炸碎周围所有矿石。" },
+            { "id": 19, "category": "greet", "content": "愿你的圣遗物强化全加双暴，次次不歪！" },
+            { "id": 20, "category": "tips", "content": "游泳时不要疯狂按加速，长按前进键其实更省力。" },
+            { "id": 21, "category": "greet", "content": "世界树的记忆里，也记录着我们今天的相遇。" },
+            { "id": 22, "category": "tips", "content": "复活食物推荐使用\"提瓦特煎蛋\"，材料便宜且到处都是。" },
+            { "id": 23, "category": "greet", "content": "别走太快，慢下来欣赏一下须弥的雨林吧。" },
+            { "id": 24, "category": "tips", "content": "每周前三次周本掉落减半，那是升级天赋的关键，一定要打。" },
+            { "id": 25, "category": "greet", "content": "工作辛苦了，要来一杯迪卢克老爷亲自调制的苹果酒吗？" },
+            { "id": 26, "category": "tips", "content": "绝大多数副C都需要堆高元素充能效率，开不出Q的副C没有伤害。" },
+            { "id": 27, "category": "greet", "content": "天动万象，虽然我没带摩拉，但问候是免费的。" },
+            { "id": 28, "category": "tips", "content": "挑战高难度BOSS前喝一瓶对应元素的精油，增红效果明显。" },
+            { "id": 29, "category": "greet", "content": "虽然身处异乡，但只要抬头看，星空始终有你的位置。" },
+            { "id": 30, "category": "tips", "content": "种门（草行久）不需要极品圣遗物，只要久岐忍等级和精通够高。" },
+            { "id": 31, "category": "greet", "content": "今天运气不错，感觉你会一发入魂抽到小草神！" },
+            { "id": 32, "category": "tips", "content": "在飞行时如果体力耗尽，立刻使用下落攻击可以避免摔死。" },
+            { "id": 33, "category": "greet", "content": "在枫丹的阳光下，不如来一场华丽的审判或者午茶？" },
+            { "id": 34, "category": "tips", "content": "蒙德和璃月的印记别忘了去纪念品商店兑换突破材料。" },
+            { "id": 35, "category": "greet", "content": "风带走了思念，也带走了我发给你的这条消息。" },
+            { "id": 36, "category": "tips", "content": "别盲目追求五星武器，满精的四星绝弦或西风系列往往更实用。" },
+            { "id": 37, "category": "greet", "content": "即使是平凡的一天，在提瓦特也是值得记录的冒险。" },
+            { "id": 38, "category": "tips", "content": "深渊的增益效果（Buff）每天都会刷新，打不过可以等明天。" },
+            { "id": 39, "category": "greet", "content": "早点休息，熬夜的话，魈上仙可是会担心的。" },
+            { "id": 40, "category": "tips", "content": "破盾法则：火破冰、冰破雷、水破火、雷或大剑破岩。" },
+            { "id": 41, "category": "greet", "content": "午安！稻妻的团子牛奶要趁热喝才好。" },
+            { "id": 42, "category": "tips", "content": "优先派遣角色去拿摩拉和矿石，这是长期的稳定收入。" },
+            { "id": 43, "category": "greet", "content": "今天的风向不对，适合在家里躺平摸鱼。" },
+            { "id": 44, "category": "tips", "content": "缺材料可以去好友世界采摘，但记得先礼貌询问。" },
+            { "id": 45, "category": "greet", "content": "愿你在这片土地上，找到属于自己的意义。" },
+            { "id": 46, "category": "tips", "content": "虽然没有跳过键，但按空格键可以稍微加快剧情文字播放速度。" },
+            { "id": 47, "category": "greet", "content": "嘿！派蒙说她肚子饿了，顺便问你今天过得好吗？" },
+            { "id": 48, "category": "tips", "content": "奶妈（如芭芭拉、心海）的治疗量与生命值挂钩，别堆错属性。" },
+            { "id": 49, "category": "greet", "content": "无论未来如何，记得我们在提瓦特的每一个瞬间。" },
+            { "id": 50, "category": "tips", "content": "找不到箱子时，记得制作该地区的\"寻宝罗盘\"。" }
+          ];
+
+          // 随机获取一个内容
+          function getRandomContent() {
+            const randomIndex = Math.floor(Math.random() * contents.length);
+            return contents[randomIndex].content;
+          }
+
+          // 获取一言数据
+          async function getHitokoto() {
+            try {
+              const response = await fetch('https://v1.hitokoto.cn/');
+              const data = await response.json();
+              return data;
+            } catch (error) {
+              console.error('获取一言失败:', error);
+              return {
+                hitokoto: "在走廊上跌倒会流鼻血，在人生中跌倒会流眼泪。",
+                from: "龙虎斗"
+              };
+            }
+          }
+
+          // 检查当前是否在首页
+          function isHomePage() {
+            const h = window.location.hash || '';
+            return !h || h === '#/' || h === '#' || h.startsWith('#/home') || h.startsWith('#/index') || h.startsWith('#/dashboard');
+          }
+
+          // 美化主页
+          async function beautify() {
+            // 检查是否在首页，只有在首页才执行美化
+            if (!isHomePage()) return;
+
+            // 等待DOM加载完成
+            if (document.readyState === 'loading') {
+              await new Promise(resolve => {
+                document.addEventListener('DOMContentLoaded', resolve);
+              });
+            }
+
+            // 增加延迟，确保页面元素完全渲染
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 检查是否已经存在美化后的布局
+            const existingLayout = document.querySelector('.mp-home-layout');
+            if (existingLayout) {
+              // 如果已经存在美化后的布局，检查是否需要更新
+              const hasWelcomeCard = existingLayout.querySelector('.el-card.is-always-shadow');
+              if (!hasWelcomeCard) {
+                // 如果美化布局中没有欢迎卡片，可能是布局被破坏了，需要重新创建
+                existingLayout.remove();
+              } else {
+                // 已经存在美化后的布局，不需要重复执行
+                return;
+              }
+            }
+
+            // 查找现有的欢迎卡片
+            const welcomeCard = document.querySelector('.el-card.is-always-shadow');
+            if (!welcomeCard) return;
+
+            // 检查欢迎卡片的父元素是否已经是美化后的布局
+            const parent = welcomeCard.parentElement;
+            if (parent && parent.classList.contains('mp-home-layout')) {
+              // 已经是美化后的布局，不需要重复执行
+              return;
+            }
+
+            // 创建新的布局容器
+            const layoutContainer = document.createElement('div');
+            layoutContainer.className = 'mp-home-layout';
+            layoutContainer.style.display = 'flex';
+            layoutContainer.style.gap = '20px';
+            layoutContainer.style.width = '100%';
+            layoutContainer.style.padding = '20px';
+
+            // 左侧个人信息卡片（占1/2）
+            const leftCard = document.createElement('div');
+            leftCard.className = 'el-card is-always-shadow';
+            leftCard.style.width = '50%';
+            leftCard.style.display = 'flex';
+            leftCard.style.flexDirection = 'column';
+            leftCard.style.alignItems = 'center';
+            leftCard.style.padding = '30px';
+
+            // 头像
+            const avatar = document.createElement('img');
+            avatar.src = 'https://q1.qlogo.cn/g?b=qq&s=0&nk=2357444016';
+            avatar.style.width = '100px';
+            avatar.style.height = '100px';
+            avatar.style.borderRadius = '50%';
+            avatar.style.marginBottom = '20px';
+            avatar.style.objectFit = 'cover';
+
+            // 名字
+            const name = document.createElement('h3');
+            name.textContent = '加载中...';
+            name.style.margin = '0 0 10px 0';
+            name.style.fontSize = '20px';
+            name.style.fontWeight = 'bold';
+
+            // 从token中解码用户名
+            function decodeUsernameFromToken(token) {
+              try {
+                if (token) {
+                  console.log('开始从token解码用户名:', token);
+                  const parts = token.split('.');
+                  if (parts.length >= 2) {
+                    const payload = parts[1];
+                    // 处理base64填充
+                    const paddedPayload = payload.padEnd(payload.length + (4 - payload.length % 4) % 4, '=');
+                    const decoded = atob(paddedPayload);
+                    const userInfo = JSON.parse(decoded);
+                    const username = userInfo?.username || '';
+                    console.log('从token解码的用户名:', username);
+                    
+                    if (username) {
+                      name.textContent = username;
+                      console.log('从token解码并更新美化卡片用户名成功');
+                      return true;
+                    }
+                  }
+                }
+              } catch (e) {
+                console.error('从token解码用户名失败:', e);
+              }
+              return false;
+            }
+            
+            // 从API获取用户名并更新
+            async function updateUserName() {
+              try {
+                console.log('=== 美化脚本开始获取用户名 ===');
+                
+                // 使用相对路径，通过本地代理发送请求，避免CORS问题
+                const apiUrl = '/api/user/info';
+                console.log('API请求URL:', apiUrl);
+                
+                // 获取本地存储的token
+                let token = '';
+                try {
+                  token = localStorage.getItem('TOKEN') || '';
+                  console.log('本地存储的token:', token ? '存在' : '不存在');
+                } catch (e) {
+                  console.log('获取本地存储失败:', e);
+                }
+                
+                // 发送请求获取用户信息
+                console.log('准备发送API请求...');
+                const response = await fetch(apiUrl, {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'token': token } : {})  // 使用token字段而不是Authorization
+                  }
+                });
+                
+                console.log('API响应状态:', response.status);
+                console.log('API响应状态文本:', response.statusText);
+                
+                if (response.ok) {
+                  console.log('API请求成功，读取响应数据...');
+                  try {
+                    const userInfo = await response.json();
+                    console.log('API响应数据:', userInfo);
+                    
+                    // 尝试多种可能的用户名字段，包括嵌套的data字段
+                    const username = userInfo?.username || userInfo?.name || userInfo?.user || userInfo?.account || userInfo?.data?.username || userInfo?.data?.name || userInfo?.data?.user || userInfo?.data?.account || '';
+                    console.log('提取的用户名:', username);
+                    
+                    if (username) {
+                      console.log('更新美化卡片用户名为:', username);
+                      name.textContent = username;
+                    } else {
+                      console.log('API响应中无用户名，尝试从token中解码');
+                      const success = decodeUsernameFromToken(token);
+                      if (!success) {
+                        name.textContent = 'User';
+                      }
+                    }
+                  } catch (e) {
+                    console.error('解析API响应失败:', e);
+                    console.log('尝试从token中解码用户名');
+                    const success = decodeUsernameFromToken(token);
+                    if (!success) {
+                      name.textContent = 'User';
+                    }
+                  }
+                } else {
+                  console.log('API请求失败，状态码:', response.status);
+                  console.log('尝试从token中解码用户名');
+                  const success = decodeUsernameFromToken(token);
+                  if (!success) {
+                    name.textContent = 'User';
+                  }
+                }
+              } catch (error) {
+                console.error('获取用户名失败:', error);
+                console.error('错误详情:', error.message);
+                console.error('错误堆栈:', error.stack);
+                
+                // 尝试从token中解码用户名
+                let token = '';
+                try {
+                  token = localStorage.getItem('TOKEN') || '';
+                  const success = decodeUsernameFromToken(token);
+                  if (!success) {
+                    name.textContent = 'User';
+                  }
+                } catch (e) {
+                  console.error('从token解码用户名失败:', e);
+                  name.textContent = 'User';
+                }
+              } finally {
+                console.log('=== 美化脚本获取用户名结束 ===');
+              }
+            }
+            
+            updateUserName();
+
+            // 平台名称
+            const platformName = document.createElement('p');
+            platformName.textContent = '这里是低代码开发管理平台';
+            platformName.style.margin = '0';
+            platformName.style.fontSize = '14px';
+            platformName.style.color = '#666';
+
+            // 组装左侧卡片
+            leftCard.appendChild(avatar);
+            leftCard.appendChild(name);
+            leftCard.appendChild(platformName);
+
+            // 右侧卡片容器
+            const rightContainer = document.createElement('div');
+            rightContainer.style.width = '50%';
+            rightContainer.style.display = 'flex';
+            rightContainer.style.flexDirection = 'column';
+            rightContainer.style.gap = '20px';
+
+            // 一言卡片
+            const hitokotoCard = document.createElement('div');
+            hitokotoCard.className = 'el-card is-always-shadow';
+            hitokotoCard.style.padding = '20px';
+
+            // 一言标题
+            const hitokotoTitle = document.createElement('h4');
+            hitokotoTitle.textContent = '';
+            hitokotoTitle.style.margin = '0 0 15px 0';
+            hitokotoTitle.style.fontSize = '16px';
+            hitokotoTitle.style.fontWeight = 'bold';
+
+            // 一言内容
+            const hitokotoContent = document.createElement('div');
+            hitokotoContent.style.marginBottom = '15px';
+
+            // 一言文本
+            const hitokotoText = document.createElement('p');
+            hitokotoText.style.margin = '0 0 10px 0';
+            hitokotoText.style.fontSize = '16px';
+            hitokotoText.style.fontWeight = 'bold';
+
+            // 一言来源
+            const hitokotoFrom = document.createElement('p');
+            hitokotoFrom.style.margin = '0';
+            hitokotoFrom.style.fontSize = '12px';
+            hitokotoFrom.style.color = '#999';
+            hitokotoFrom.style.textAlign = 'right';
+
+            // 组装一言内容
+            hitokotoContent.appendChild(hitokotoText);
+            hitokotoContent.appendChild(hitokotoFrom);
+
+            // 随机内容卡片
+            const randomContentCard = document.createElement('div');
+            randomContentCard.className = 'el-card is-always-shadow';
+            randomContentCard.style.padding = '20px';
+
+            // 随机内容文本
+            const randomContentText = document.createElement('p');
+            randomContentText.style.margin = '0';
+            randomContentText.style.fontSize = '14px';
+
+            // 组装一言卡片
+            hitokotoCard.appendChild(hitokotoTitle);
+            hitokotoCard.appendChild(hitokotoContent);
+
+            // 组装随机内容卡片
+            randomContentCard.appendChild(randomContentText);
+
+            // 组装右侧容器
+            rightContainer.appendChild(hitokotoCard);
+            rightContainer.appendChild(randomContentCard);
+
+            // 组装布局容器
+            layoutContainer.appendChild(leftCard);
+            layoutContainer.appendChild(rightContainer);
+
+            // 替换现有卡片
+            welcomeCard.parentNode.replaceChild(layoutContainer, welcomeCard);
+
+            // 填充一言数据
+            const hitokotoData = await getHitokoto();
+            hitokotoText.textContent = hitokotoData.hitokoto;
+            hitokotoFrom.textContent = `——${hitokotoData.from}`;
+
+            // 填充随机内容
+            randomContentText.textContent = getRandomContent();
+          }
+
+          // 执行美化
+          beautify();
+
+          // 当路由变化为首页时也执行
+          window.addEventListener('hashchange', function() {
+            const h = window.location.hash || '';
+            if (!h || h === '#/' || h === '#' || h.startsWith('#/home') || h.startsWith('#/index') || h.startsWith('#/dashboard')) {
+              setTimeout(beautify, 500);
+            }
+          });
+
+          // 使用MutationObserver监控页面变化，确保欢迎卡片重新出现时重新美化
+          if (window.MutationObserver) {
+            const observer = new MutationObserver((mutations) => {
+              // 检查是否有新的欢迎卡片被添加，或者页面结构发生变化
+              let shouldBeautify = false;
+              
+              // 检查是否有新节点添加
+              mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                  if (node.nodeType === 1) {
+                    // 检查当前节点是否是欢迎卡片
+                    if (node.classList && node.classList.contains('el-card') && node.classList.contains('is-always-shadow')) {
+                      shouldBeautify = true;
+                    }
+                    // 检查子节点
+                    const welcomeCard = node.querySelector('.el-card.is-always-shadow');
+                    if (welcomeCard) {
+                      shouldBeautify = true;
+                    }
+                  }
+                });
+              });
+              
+              // 额外检查：直接在文档中查找欢迎卡片
+              const welcomeCard = document.querySelector('.el-card.is-always-shadow');
+              if (welcomeCard) {
+                // 检查是否已经是美化后的布局
+                const parent = welcomeCard.parentElement;
+                if (parent && !parent.classList.contains('mp-home-layout')) {
+                  shouldBeautify = true;
+                }
+              }
+              
+              // 如果需要美化，执行操作
+            if (shouldBeautify) {
+              // 检查是否在首页，只有在首页才执行美化
+              if (isHomePage()) {
+                // 清除之前的定时器，避免重复执行
+                if (window.beautifyTimer) {
+                  clearTimeout(window.beautifyTimer);
+                }
+                // 设置新的定时器，确保DOM完全稳定
+                window.beautifyTimer = setTimeout(beautify, 200);
+              }
+            }
+            });
+            
+            // 监控整个文档的变化，包括属性变化
+            if (document.body) {
+              observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true
+              });
+            } else {
+              // 如果document.body不存在，延迟执行
+              setTimeout(() => {
+                if (document.body) {
+                  observer.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true
+                  });
+                }
+              }, 100);
+            }
+          }
+
+          // 定期检查布局状态，确保美化效果持续存在
+          setInterval(() => {
+            // 检查是否在首页，只有在首页才执行美化
+            if (isHomePage()) {
+              const welcomeCard = document.querySelector('.el-card.is-always-shadow');
+              if (welcomeCard) {
+                const parent = welcomeCard.parentElement;
+                if (parent && !parent.classList.contains('mp-home-layout')) {
+                  setTimeout(beautify, 100);
+                }
+              }
+            }
+          }, 3000);
+        })();
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-1781b57c.js"></script>
+    <link rel="stylesheet" href="/assets/index-a3fe83bc.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    
+
+  </body>
+</html>
